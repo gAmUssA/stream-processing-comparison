@@ -1,6 +1,6 @@
 plugins {
     id("java")
-    id("org.asciidoctor.jvm.convert") version "3.3.2" apply false
+    id("org.asciidoctor.jvm.convert") version "4.0.4" apply false
 }
 
 allprojects {
