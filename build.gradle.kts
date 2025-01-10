@@ -47,5 +47,5 @@ extra["kafkaVersion"] = "3.8.0"
 extra["flinkVersion"] = "1.17.1"  // Use a stable version that is available
 extra["lombokVersion"] = "1.18.30"
 extra["jacksonVersion"] = "2.15.3"
-extra["slf4jVersion"] = "2.0.9"
+extra["slf4jVersion"] = "2.0.16"
 extra["logbackVersion"] = "1.4.14"
