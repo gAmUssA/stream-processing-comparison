@@ -1,0 +1,53 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base"
+  ],
+  "packageRules": [
+    {
+      "matchPackagePatterns": [
+        "^org.apache.kafka"
+      ],
+      "groupName": "kafka packages",
+      "allowedVersions": "<=3.8.0"
+    },
+    {
+      "matchPackagePatterns": [
+        "^org.apache.flink"
+      ],
+      "groupName": "flink packages",
+      "allowedVersions": "<=1.20.0"
+    },
+    {
+      "matchPackagePatterns": [
+        "*"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "groupName": "all non-major dependencies",
+      "groupSlug": "all-minor-patch"
+    }
+  ],
+  "schedule": [
+    "every weekend"
+  ],
+  "labels": [
+    "dependencies"
+  ],
+  "prHourlyLimit": 4,
+  "prConcurrentLimit": 10,
+  "branchConcurrentLimit": 20,
+  "dependencyDashboard": true,
+  "dependencyDashboardTitle": "Dependencies Dashboard",
+  "rebaseWhen": "behind-base-branch",
+  "automerge": true,
+  "automergeType": "pr",
+  "automergeStrategy": "squash",
+  "platformAutomerge": true,
+  "ignorePaths": [
+    "**/node_modules/**",
+    "**/bower_components/**"
+  ]
+}

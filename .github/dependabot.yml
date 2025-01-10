@@ -1,0 +1,28 @@
+version: 2
+updates:
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "github-actions"
+
+  # Gradle dependencies
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "java"
+    ignore:
+      # Ignore major version updates for Kafka to maintain compatibility
+      - dependency-name: "org.apache.kafka:*"
+        update-types: ["version-update:semver-major"]
+      # Ignore major version updates for Flink to maintain compatibility
+      - dependency-name: "org.apache.flink:*"
+        update-types: ["version-update:semver-major"]

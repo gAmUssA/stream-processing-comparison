@@ -1,0 +1,139 @@
+= Stream Processing Comparison: Apache Kafka® Streams vs Apache Flink
+:toc:
+:icons: font
+:source-highlighter: highlight.js
+:experimental:
+
+This project provides a comparison between Apache Kafka® Streams and Apache Flink stream processing frameworks.
+
+== Project Structure
+
+The project consists of four main modules:
+
+* `common` -- Shared data models and utilities
+* `kafka-streams-processor` -- Apache Kafka® Streams implementation
+* `flink-processor` -- Apache Flink implementation
+* `data-generator` -- Test data generator
+
+== Technology Stack
+
+[cols="1,1"]
+|===
+|Technology |Version
+
+|Java
+|17
+
+|Apache Kafka®
+|3.8.0
+
+|Apache Flink
+|1.20.0
+
+|Gradle
+|8.5
+|===
+
+== Prerequisites
+
+To run this project, you need:
+
+* JDK 17 or later
+* Docker and Docker Compose
+* Gradle 8.5 or later
+
+== Building the Project
+
+[source,bash]
+----
+./gradlew clean build
+----
+
+== Module Details
+
+=== Common Module
+Contains shared data models:
+
+* `FlightEvent` - Represents flight events with properties like flight number, airline, airports, departure times, and status
+* `RouteDelayStats` - Maintains statistics about delays for specific routes, used for analyzing flight patterns
+
+=== Data Generator
+Generates simulated flight events and publishes them to Kafka topics. Features include:
+
+* Realistic flight data generation using major airports and airlines
+* Random delay simulation
+* Flight status updates
+* Configurable generation rates
+
+=== Kafka Streams Processor
+Implementation of stream processing using Apache Kafka® Streams API (in progress).
+
+=== Flink Processor
+Implementation of stream processing using Apache Flink (in progress).
+
+== Running the Examples
+
+=== Using Docker Compose
+
+. Start Kafka using Docker Compose:
++
+[source,bash]
+----
+docker compose up -d
+----
+
+. Run the data generator:
++
+[source,bash]
+----
+./gradlew :data-generator:run
+----
+
+=== Data Generator Configuration
+
+The data generator accepts the following command-line arguments:
+
+* First argument: Bootstrap servers (default: localhost:29092)
+* Second argument: Topic name (default: flight-status)
+
+Example with custom configuration:
+[source,bash]
+----
+./gradlew :data-generator:run --args="localhost:29092 custom-topic"
+----
+
+=== Generated Data Format
+
+The data generator produces flight events in JSON format with the following structure:
+
+[source,json]
+----
+{
+  "flightNumber": "AA1234",
+  "airline": "AA",
+  "departureAirport": "JFK",
+  "arrivalAirport": "LAX",
+  "scheduledDeparture": "2024-01-10T10:00:00",
+  "actualDeparture": "2024-01-10T10:15:00",
+  "status": "DELAYED",
+  "eventTimestamp": 1704967200000
+}
+----
+
+== Testing
+
+The project includes comprehensive tests:
+
+* Unit tests for data models
+* Integration tests using Testcontainers for Kafka interaction
+* End-to-end tests for data generation and processing
+
+Run tests with:
+[source,bash]
+----
+./gradlew test
+----
+
+== License
+
+This project is licensed under the Apache License 2.0.
