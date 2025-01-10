@@ -34,7 +34,7 @@ subprojects {
 
     dependencies {
         testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
-        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.1")
+        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.4")
     }
 
     tasks.test {
