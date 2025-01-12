@@ -1,25 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <!-- Color mapping for log levels -->
-    <conversionRule conversionWord="highlightex" 
-                    converterClass="ch.qos.logback.classic.pattern.color.HighlightingCompositeConverter" />
-    
-    <property name="CONSOLE_LOG_PATTERN"
-              value="%yellow(%d{yyyy-MM-dd HH:mm:ss.SSS}) %highlight(%-5level) [%blue(%t)] %cyan(%logger{36}) : %msg%n"/>
-
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+    <appender name="NICE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%yellow(%d{yyyy-MM-dd HH:mm:ss}) %cyan(${HOSTNAME:-localhost}) %highlight([%p]) %green((%file:%line\)) - %msg%n</pattern>
         </encoder>
     </appender>
 
     <!-- Application Loggers -->
     <logger name="com.example.streaming.model" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="NICE"/>
     </logger>
 
     <!-- Root Logger -->
     <root level="INFO">
-        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="NICE"/>
     </root>
 </configuration>

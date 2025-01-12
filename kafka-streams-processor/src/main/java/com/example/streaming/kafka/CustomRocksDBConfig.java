@@ -10,7 +10,8 @@ public class CustomRocksDBConfig implements RocksDBConfigSetter {
     @Override
     public void setConfig(final String storeName, final Options options,
                          final Map<String, Object> configs) {
-        BlockBasedTableConfig tableConfig = new BlockBasedTableConfig();
+        // Get the existing table config instead of creating a new one
+        BlockBasedTableConfig tableConfig = (BlockBasedTableConfig) options.tableFormatConfig();
         
         // Optimize for point lookups
         tableConfig.setBlockCacheSize(50 * 1024 * 1024L); // 50MB block cache
