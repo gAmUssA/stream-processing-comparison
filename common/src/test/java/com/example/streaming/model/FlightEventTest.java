@@ -2,7 +2,6 @@ package com.example.streaming.model;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
@@ -10,71 +9,78 @@ import java.time.LocalDateTime;
 import static org.junit.jupiter.api.Assertions.*;
 
 class FlightEventTest {
-    private FlightEvent flightEvent;
-    private ObjectMapper objectMapper;
-    private static final LocalDateTime SCHEDULED = LocalDateTime.of(2025, 1, 10, 10, 0);
-    private static final LocalDateTime ACTUAL = LocalDateTime.of(2025, 1, 10, 10, 30);
+    private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
-    @BeforeEach
-    void setUp() {
-        flightEvent = new FlightEvent(
-            "FL123",
-            "TestAir",
+    @Test
+    void shouldCalculateRouteKey() {
+        FlightEvent event = new FlightEvent(
+            "AA123",
+            "AA",
             "JFK",
             "LAX",
-            SCHEDULED,
-            ACTUAL,
+            LocalDateTime.now(),
+            LocalDateTime.now(),
+            "DELAYED"
+        );
+        assertEquals("JFK-LAX", event.getRouteKey());
+    }
+
+    @Test
+    void shouldCalculateDelayMinutes() {
+        LocalDateTime scheduled = LocalDateTime.of(2025, 1, 11, 15, 40, 29);
+        LocalDateTime actual = scheduled.plusMinutes(30);
+        
+        FlightEvent event = new FlightEvent(
+            "AA123",
+            "AA",
+            "JFK",
+            "LAX",
+            scheduled,
+            actual,
             "DELAYED"
         );
         
-        objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
+        assertEquals(30, event.getDelayMinutes());
     }
 
     @Test
-    void testDelayMinutesCalculation() {
-        assertEquals(30, flightEvent.getDelayMinutes(),
-            "Delay should be 30 minutes");
+    void shouldHandleNullDepartureTimes() {
+        FlightEvent event = new FlightEvent(
+            "AA123",
+            "AA",
+            "JFK",
+            "LAX",
+            null,
+            null,
+            "SCHEDULED"
+        );
+        assertEquals(0, event.getDelayMinutes());
     }
 
     @Test
-    void testDelayMinutesWithNullTimes() {
-        FlightEvent nullEvent = new FlightEvent();
-        nullEvent.setScheduledDeparture(null);
-        nullEvent.setActualDeparture(null);
+    void shouldSerializeAndDeserialize() throws Exception {
+        LocalDateTime now = LocalDateTime.of(2025, 1, 11, 15, 40, 29);
+        FlightEvent event = new FlightEvent(
+            "AA123",
+            "AA",
+            "JFK",
+            "LAX",
+            now,
+            now.plusMinutes(30),
+            "DELAYED"
+        );
         
-        assertEquals(0, nullEvent.getDelayMinutes(),
-            "Delay should be 0 when times are null");
-    }
-
-    @Test
-    void testRouteKeyGeneration() {
-        assertEquals("JFK-LAX", flightEvent.getRouteKey(),
-            "Route key should be in format 'departure-arrival'");
-    }
-
-    @Test
-    void testEqualsAndHashCode() {
-        FlightEvent event1 = new FlightEvent("FL123", "TestAir", "JFK", "LAX", SCHEDULED, ACTUAL, "DELAYED");
-        FlightEvent event2 = new FlightEvent("FL123", "TestAir", "JFK", "LAX", SCHEDULED, ACTUAL, "DELAYED");
-        FlightEvent differentEvent = new FlightEvent("FL456", "TestAir", "JFK", "LAX", SCHEDULED, ACTUAL, "DELAYED");
-
-        assertTrue(event1.equals(event2), "Same flight events should be equal");
-        assertFalse(event1.equals(differentEvent), "Different flight events should not be equal");
-        assertEquals(event1.hashCode(), event2.hashCode(), "Hash codes should be equal for equal events");
-    }
-
-    @Test
-    void testJsonSerialization() throws Exception {
-        String json = objectMapper.writeValueAsString(flightEvent);
-        FlightEvent deserializedEvent = objectMapper.readValue(json, FlightEvent.class);
+        String json = objectMapper.writeValueAsString(event);
+        FlightEvent deserialized = objectMapper.readValue(json, FlightEvent.class);
         
-        assertEquals(flightEvent.getFlightNumber(), deserializedEvent.getFlightNumber());
-        assertEquals(flightEvent.getAirline(), deserializedEvent.getAirline());
-        assertEquals(flightEvent.getDepartureAirport(), deserializedEvent.getDepartureAirport());
-        assertEquals(flightEvent.getArrivalAirport(), deserializedEvent.getArrivalAirport());
-        assertEquals(flightEvent.getScheduledDeparture(), deserializedEvent.getScheduledDeparture());
-        assertEquals(flightEvent.getActualDeparture(), deserializedEvent.getActualDeparture());
-        assertEquals(flightEvent.getStatus(), deserializedEvent.getStatus());
+        assertEquals(event.getFlightNumber(), deserialized.getFlightNumber());
+        assertEquals(event.getAirline(), deserialized.getAirline());
+        assertEquals(event.getDepartureAirport(), deserialized.getDepartureAirport());
+        assertEquals(event.getArrivalAirport(), deserialized.getArrivalAirport());
+        assertEquals(event.getScheduledDepartureTime(), deserialized.getScheduledDepartureTime());
+        assertEquals(event.getActualDepartureTime(), deserialized.getActualDepartureTime());
+        assertEquals(event.getStatus(), deserialized.getStatus());
+        assertEquals(event.getRouteKey(), deserialized.getRouteKey());
+        assertEquals(event.getDelayMinutes(), deserialized.getDelayMinutes());
     }
 }

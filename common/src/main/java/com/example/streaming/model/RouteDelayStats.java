@@ -1,109 +1,123 @@
 package com.example.streaming.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.time.Instant;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Maintains statistics about delays for a specific route.
  * This class demonstrates stateful computations in both frameworks.
  */
-@Data
-@NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class RouteDelayStats {
-    private String routeId;
+    private String routeKey;
+    private List<Double> delays;
+    private int currentWindowSize;
     private double averageDelay;
-    private long totalFlights;
-    private long delayedFlights;
-    private long windowStartTime;
-    private long windowEndTime;
-    
-    // Queue to maintain recent delays for rolling calculations
-    @JsonIgnore // We don't need to serialize this for transmission
-    private Queue<DelayRecord> recentDelays = new LinkedList<>();
+    private boolean highRiskRoute;
 
-    public RouteDelayStats(String routeId) {
-        this.routeId = routeId;
-        this.windowStartTime = System.currentTimeMillis();
-        this.windowEndTime = this.windowStartTime;
-        this.averageDelay = 0.0;
-        this.totalFlights = 0;
-        this.delayedFlights = 0;
+    @JsonCreator
+    public RouteDelayStats(
+        @JsonProperty("routeKey") String routeKey,
+        @JsonProperty("delays") List<Double> delays,
+        @JsonProperty("currentWindowSize") int currentWindowSize,
+        @JsonProperty("averageDelay") double averageDelay,
+        @JsonProperty("highRiskRoute") boolean highRiskRoute
+    ) {
+        this.routeKey = routeKey;
+        this.delays = delays != null ? delays : new ArrayList<>();
+        this.currentWindowSize = currentWindowSize;
+        this.averageDelay = averageDelay;
+        this.highRiskRoute = highRiskRoute;
     }
 
-    /**
-     * Add a new delay record and update statistics
-     * @param delayMinutes the delay in minutes
-     * @param timestamp the timestamp of the event
-     */
-    public void addDelay(long delayMinutes, long timestamp) {
-        // Remove old entries (older than 15 minutes)
-        long cutoffTime = timestamp - (15 * 60 * 1000);
-        while (!recentDelays.isEmpty() && recentDelays.peek().timestamp < cutoffTime) {
-            recentDelays.poll();
+    public RouteDelayStats() {
+        this(null, new ArrayList<>(), 0, 0.0, false);
+    }
+
+    public void addFlight(FlightEvent event) {
+        if (routeKey == null) {
+            routeKey = event.getRouteKey();
+            delays = new ArrayList<>();
+            currentWindowSize = 0;
+            averageDelay = 0.0;
+            highRiskRoute = false;
         }
 
-        // Add new delay
-        recentDelays.offer(new DelayRecord(delayMinutes, timestamp));
-        
-        // Update statistics
-        this.totalFlights++;
-        if (delayMinutes > 0) {
-            this.delayedFlights++;
-        }
-        
-        // Calculate new average
-        this.averageDelay = recentDelays.stream()
-            .mapToLong(record -> record.delayMinutes)
+        // Get delay in minutes from the event
+        double delayMinutes = event.getDelayMinutes();
+        delays.add(delayMinutes);
+        currentWindowSize++;
+
+        // Recalculate average delay
+        averageDelay = delays.stream()
+            .mapToDouble(Double::doubleValue)
             .average()
             .orElse(0.0);
-            
-        this.windowEndTime = timestamp;
+
+        // Update high risk status
+        // A route is considered high risk if:
+        // 1. There are at least 5 flights in the window
+        // 2. The average delay is more than 30 minutes
+        highRiskRoute = currentWindowSize >= 5 && averageDelay > 30.0;
     }
 
-    /**
-     * Get the current number of delay records in the window
-     * @return number of records
-     */
-    @JsonIgnore
-    public int getCurrentWindowSize() {
-        return recentDelays.size();
+    // Getters and setters
+    public String getRouteKey() {
+        return routeKey;
     }
 
-    /**
-     * Get the delay percentage (delayed flights / total flights)
-     * @return percentage of delayed flights
-     */
-    @JsonIgnore
-    public double getDelayPercentage() {
-        return totalFlights > 0 ? (double) delayedFlights / totalFlights * 100 : 0.0;
-    }
-
-    /**
-     * Determines if this route is experiencing significant delays
-     * that might affect connected flights.
-     * @return true if the route is considered high risk
-     */
-    @JsonIgnore
-    public boolean isHighRiskRoute() {
-        return averageDelay > 15 && // More than 15 minutes average delay
-               delayedFlights >= 3;  // At least 3 delayed flights
-    }
-
-    /**
-     * Inner class to track individual delay records
-     */
-    private static class DelayRecord {
-        final long delayMinutes;
-        final long timestamp;
-
-        DelayRecord(long delayMinutes, long timestamp) {
-            this.delayMinutes = delayMinutes;
-            this.timestamp = timestamp;
+    public void setRouteKey(String routeKey) {
+        this.routeKey = routeKey;
+        if (this.routeKey != null && !this.routeKey.equals(routeKey)) {
+            // Reset state for new route
+            delays = new ArrayList<>();
+            currentWindowSize = 0;
+            averageDelay = 0.0;
+            highRiskRoute = false;
         }
+    }
+
+    public List<Double> getDelays() {
+        return delays;
+    }
+
+    public void setDelays(List<Double> delays) {
+        this.delays = delays != null ? delays : new ArrayList<>();
+    }
+
+    public int getCurrentWindowSize() {
+        return currentWindowSize;
+    }
+
+    public void setCurrentWindowSize(int currentWindowSize) {
+        this.currentWindowSize = currentWindowSize;
+    }
+
+    public double getAverageDelay() {
+        return averageDelay;
+    }
+
+    public void setAverageDelay(double averageDelay) {
+        this.averageDelay = averageDelay;
+    }
+
+    public boolean isHighRiskRoute() {
+        return highRiskRoute;
+    }
+
+    public void setHighRiskRoute(boolean highRiskRoute) {
+        this.highRiskRoute = highRiskRoute;
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+            "RouteDelayStats{routeKey='%s', currentWindowSize=%d, averageDelay=%.1f, highRiskRoute=%s, delays=%s}",
+            routeKey, currentWindowSize, averageDelay, highRiskRoute, delays
+        );
     }
 }

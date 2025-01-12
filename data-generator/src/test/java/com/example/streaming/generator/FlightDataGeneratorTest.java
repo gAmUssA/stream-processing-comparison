@@ -78,8 +78,8 @@ class FlightDataGeneratorTest {
                 assertNotNull(event.getAirline());
                 assertNotNull(event.getDepartureAirport());
                 assertNotNull(event.getArrivalAirport());
-                assertNotNull(event.getScheduledDeparture());
-                assertNotNull(event.getActualDeparture());
+                assertNotNull(event.getScheduledDepartureTime());
+                assertNotNull(event.getActualDepartureTime());
                 assertNotNull(event.getStatus());
                 
                 // Flight number should be the key
