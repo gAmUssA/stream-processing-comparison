@@ -15,7 +15,7 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:${lombokVersion}")
     
     // Test dependencies
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
     testImplementation("org.mockito:mockito-core:5.8.0")
     testImplementation("org.mockito:mockito-junit-jupiter:5.15.2")
     
