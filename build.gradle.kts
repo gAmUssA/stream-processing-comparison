@@ -45,12 +45,12 @@ subprojects {
 // Common versions for all modules
 extra.apply {
     extra["kafkaVersion"] = "3.9.0"
-    extra["flinkVersion"] = "1.17.1"  // Use a stable version that is available
-    extra["lombokVersion"] = "1.18.30"
-    extra["jacksonVersion"] = "2.15.3"
+    extra["flinkVersion"] = "1.20.0"  // Use a stable version that is available
+    extra["lombokVersion"] = "1.18.36"
+    extra["jacksonVersion"] = "2.18.2"
     extra["slf4jVersion"] = "2.0.16"
-    set("logbackVersion", "1.4.14")
-    set("junitVersion", "5.10.1")
-    set("mockitoVersion", "5.8.0")
+    set("logbackVersion", "1.5.16")
+    set("junitVersion", "5.11.4")
+    set("mockitoVersion", "5.15.2")
     set("testcontainersVersion", "1.19.3")
 }
