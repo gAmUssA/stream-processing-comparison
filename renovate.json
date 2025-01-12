@@ -1,33 +1,33 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base"
+    "config:recommended"
   ],
   "packageRules": [
     {
-      "matchPackagePatterns": [
-        "^org.apache.kafka"
-      ],
       "groupName": "kafka packages",
-      "allowedVersions": "<=3.8.0"
+      "allowedVersions": "<=3.8.0",
+      "matchPackageNames": [
+        "/^org.apache.kafka/"
+      ]
     },
     {
-      "matchPackagePatterns": [
-        "^org.apache.flink"
-      ],
       "groupName": "flink packages",
-      "allowedVersions": "<=1.20.0"
+      "allowedVersions": "<=1.20.0",
+      "matchPackageNames": [
+        "/^org.apache.flink/"
+      ]
     },
     {
-      "matchPackagePatterns": [
-        "*"
-      ],
       "matchUpdateTypes": [
         "minor",
         "patch"
       ],
       "groupName": "all non-major dependencies",
-      "groupSlug": "all-minor-patch"
+      "groupSlug": "all-minor-patch",
+      "matchPackageNames": [
+        "*"
+      ]
     }
   ],
   "schedule": [
