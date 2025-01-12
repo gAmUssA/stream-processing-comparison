@@ -1,6 +1,6 @@
 plugins {
     application
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("com.gradleup.shadow") version "8.3.3"
 }
 
 val flinkVersion: String by rootProject.extra
@@ -24,19 +24,19 @@ val flinkShadowJar by configurations
 
 dependencies {
     implementation(project(":common"))
-    
+
     // Flink core dependencies
     implementation("org.apache.flink:flink-streaming-java:${flinkVersion}")
     implementation("org.apache.flink:flink-clients:${flinkVersion}")
     implementation("org.apache.flink:flink-connector-base:${flinkVersion}")
-    implementation("org.apache.flink:flink-connector-kafka:${flinkVersion}")
+    implementation("org.apache.flink:flink-connector-kafka:3.4.0-1.20")
     implementation("org.apache.flink:flink-runtime-web:${flinkVersion}")
     implementation("org.apache.flink:flink-java:${flinkVersion}")
-    
+
     // Add logging framework
     implementation("org.slf4j:slf4j-api:${slf4jVersion}")
     implementation("ch.qos.logback:logback-classic:${logbackVersion}")
-    
+
     // Lombok
     compileOnly("org.projectlombok:lombok:${lombokVersion}")
     annotationProcessor("org.projectlombok:lombok:${lombokVersion}")
@@ -45,7 +45,7 @@ dependencies {
     flinkShadowJar("org.apache.flink:flink-streaming-java:${flinkVersion}")
     flinkShadowJar("org.apache.flink:flink-clients:${flinkVersion}")
     flinkShadowJar("org.apache.flink:flink-connector-base:${flinkVersion}")
-    flinkShadowJar("org.apache.flink:flink-connector-kafka:${flinkVersion}")
+    flinkShadowJar("org.apache.flink:flink-connector-kafka:3.4.0-1.20")
     flinkShadowJar("org.apache.flink:flink-runtime-web:${flinkVersion}")
     flinkShadowJar("org.apache.flink:flink-java:${flinkVersion}")
 }
@@ -57,14 +57,14 @@ tasks.shadowJar {
     configurations.remove(flinkShadowJar)
 
     archiveClassifier.set("all")
-    
+
     manifest {
         attributes["Main-Class"] = application.mainClass.get()
     }
 
     // Relocate dependencies to avoid conflicts
     relocate("com.google.common", "shade.com.google.common")
-    
+
     // Exclude signed jars
     exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")
 }
