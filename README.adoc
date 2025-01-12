@@ -22,10 +22,10 @@ The project consists of four main modules:
 |Technology |Version
 
 |Java
-|17
+|21
 
 |Apache Kafka®
-|3.8.0
+|3.8.0 (KRaft mode)
 
 |Apache Flink
 |1.20.0
@@ -38,7 +38,7 @@ The project consists of four main modules:
 
 To run this project, you need:
 
-* JDK 17 or later
+* JDK 21 or later
 * Docker and Docker Compose
 * Gradle 8.5 or later
 
@@ -66,7 +66,12 @@ Generates simulated flight events and publishes them to Kafka topics. Features i
 * Configurable generation rates
 
 === Kafka Streams Processor
-Implementation of stream processing using Apache Kafka® Streams API (in progress).
+Implementation of stream processing using Apache Kafka® Streams API. Features:
+
+* Real-time flight delay monitoring
+* Route-based delay statistics
+* High-risk route detection
+* Exactly-once processing guarantee
 
 === Flink Processor
 Implementation of stream processing using Apache Flink (in progress).
@@ -113,10 +118,9 @@ The data generator produces flight events in JSON format with the following stru
   "airline": "AA",
   "departureAirport": "JFK",
   "arrivalAirport": "LAX",
-  "scheduledDeparture": "2024-01-10T10:00:00",
-  "actualDeparture": "2024-01-10T10:15:00",
-  "status": "DELAYED",
-  "eventTimestamp": 1704967200000
+  "scheduledDepartureTime": "2025-01-11T15:40:29.000",
+  "actualDepartureTime": "2025-01-11T16:10:29.000",
+  "status": "DELAYED"
 }
 ----
 
@@ -125,8 +129,9 @@ The data generator produces flight events in JSON format with the following stru
 The project includes comprehensive tests:
 
 * Unit tests for data models
-* Integration tests using Testcontainers for Kafka interaction
+* Integration tests using Testcontainers with Confluent Kafka 7.8.0
 * End-to-end tests for data generation and processing
+* State store testing with RocksDB
 
 Run tests with:
 [source,bash]
