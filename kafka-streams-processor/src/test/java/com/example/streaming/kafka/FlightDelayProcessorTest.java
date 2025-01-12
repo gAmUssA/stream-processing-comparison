@@ -59,10 +59,11 @@ class FlightDelayProcessorTest {
         props.put(StreamsConfig.REPLICATION_FACTOR_CONFIG, 1);
         props.put(StreamsConfig.WINDOW_STORE_CHANGE_LOG_ADDITIONAL_RETENTION_MS_CONFIG, Duration.ofHours(1).toMillis());
         props.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 0);
-        props.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0);
+        props.put(StreamsConfig.STATESTORE_CACHE_MAX_BYTES_CONFIG, 0);
 
         FlightDelayProcessor processor = new FlightDelayProcessor(INPUT_TOPIC, DELAYS_TOPIC, ALERTS_TOPIC);
         Topology topology = processor.buildTopology();
+        System.out.println(topology.describe().toString());
         testDriver = new TopologyTestDriver(topology, props);
 
         inputTopic = testDriver.createInputTopic(

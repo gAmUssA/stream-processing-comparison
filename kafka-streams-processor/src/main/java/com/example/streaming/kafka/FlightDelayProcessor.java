@@ -23,6 +23,7 @@ import org.apache.kafka.streams.kstream.Windowed;
 import org.apache.kafka.streams.state.WindowStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -92,6 +93,7 @@ public class FlightDelayProcessor {
           }
         })
         .filter((key, value) -> value != null && value.isValid())
+        .peek((key, value) -> MDC.put("route", value.getRouteKey()))
         .selectKey((key, value) -> value.getRouteKey());
 
     // Aggregate flight delays into stats
@@ -105,10 +107,14 @@ public class FlightDelayProcessor {
               return stats;
             },
             (key, value, aggregate) -> {
-              logger.debug("Aggregating flight {} into stats for route {}", value, key);
-              aggregate.setRouteKey(key);
-              aggregate.addFlight(value);
-              return aggregate;
+              try {
+                logger.debug("Aggregating flight {} into stats for route {}", value, key);
+                aggregate.setRouteKey(key);
+                aggregate.addFlight(value);
+                return aggregate;
+              } finally {
+                MDC.remove("route");
+              }
             },
             Materialized.<String, RouteDelayStats, WindowStore<Bytes, byte[]>>as(STORE_NAME)
                 .withKeySerde(Serdes.String())
@@ -144,15 +150,20 @@ public class FlightDelayProcessor {
 
     // Generate alerts for high-risk routes
     KStream<String, String> alertsStream = branches[0]
+        .peek((key, stats) -> MDC.put("route", stats.getRouteKey()))
         .mapValues(stats -> {
-          String alert = String.format(
-              "HIGH RISK ROUTE ALERT - %s has %d delays with average delay of %.1f minutes",
-              stats.getRouteKey(),
-              stats.getCurrentWindowSize(),
-              stats.getAverageDelay()
-          );
-          logger.info("Generated alert: {}", alert);
-          return alert;
+          try {
+            String alert = String.format(
+                "HIGH RISK ROUTE ALERT - %s has %d delays with average delay of %.1f minutes",
+                stats.getRouteKey(),
+                stats.getCurrentWindowSize(),
+                stats.getAverageDelay()
+            );
+            logger.info("Generated alert: {}", alert);
+            return alert;
+          } finally {
+            MDC.remove("route");
+          }
         });
 
     // Output to topics

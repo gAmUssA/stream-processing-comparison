@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+
 plugins {
     id("java")
     id("org.asciidoctor.jvm.convert") version "4.0.4" apply false
@@ -40,8 +42,28 @@ subprojects {
 
     tasks.test {
         useJUnitPlatform()
+        // Enable parallel test execution
+        maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).let { if (it > 0) it else 1 }
+
+        // Enable test forking
+        forkEvery = 10
+
+        // Increase heap space if needed
+        minHeapSize = "256m"
+        maxHeapSize = "1g"
+
+
+        testLogging {
+            outputs.upToDateWhen { false }
+            showStandardStreams = false
+            events("passed", "skipped", "failed")
+            exceptionFormat = TestExceptionFormat.FULL
+        }
+
     }
 }
+
+gradle.startParameter.maxWorkerCount = Runtime.getRuntime().availableProcessors()
 
 // Common versions for all modules
 extra.apply {
