@@ -28,3 +28,16 @@ services:
       - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
       - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1
       - KAFKA_MIN_INSYNC_REPLICAS=1
+
+  data-generator:
+    build: 
+      context: ./data-generator
+      dockerfile: Dockerfile
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - KAFKA_TOPIC=flight-status
+      - GENERATION_INTERVAL_MS=1000
+      - NUMBER_OF_FLIGHTS=10

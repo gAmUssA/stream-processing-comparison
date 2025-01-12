@@ -34,6 +34,8 @@ public class FlightDataGenerator {
   private final Faker faker = new Faker();
   private final String topic;
   private final Map<String, FlightState> activeFlights = new ConcurrentHashMap<>();
+  private final int generationIntervalMs;
+  private final int numberOfFlights;
 
   // Major airports for more realistic routes
   private static final List<String> MAJOR_AIRPORTS = Arrays.asList(
@@ -47,7 +49,6 @@ public class FlightDataGenerator {
 
   // Track flight states for realistic updates
   private static class FlightState {
-
     LocalDateTime scheduledDeparture;
     String departureAirport;
     String arrivalAirport;
@@ -55,9 +56,9 @@ public class FlightDataGenerator {
     boolean isCompleted;
   }
 
-  public FlightDataGenerator(String bootstrapServers, String topic) {
+  public FlightDataGenerator(Properties config) {
     Properties props = new Properties();
-    props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+    props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, config.getProperty("kafka.bootstrap.servers", "localhost:29092"));
     props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
     props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
     props.put(ProducerConfig.ACKS_CONFIG, "1");
@@ -66,20 +67,31 @@ public class FlightDataGenerator {
     props.put(ProducerConfig.RETRIES_CONFIG, 3);
 
     this.producer = new KafkaProducer<>(props);
-    this.topic = topic;
+    this.topic = config.getProperty("kafka.topic", "flight-status");
+    this.generationIntervalMs = Integer.parseInt(config.getProperty("generation.interval.ms", "5000"));
+    this.numberOfFlights = Integer.parseInt(config.getProperty("number.of.flights", "10"));
+
+    logger.info("Initialized FlightDataGenerator with bootstrap servers: {}, topic: {}, interval: {}ms, flights: {}",
+        props.get(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG), topic, generationIntervalMs, numberOfFlights);
   }
 
   public void startGenerating() {
     ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
 
-    // Generate new flights every 5 seconds
-    executor.scheduleAtFixedRate(this::generateNewFlight, 0, 5, TimeUnit.SECONDS);
+    // Generate new flights based on configured interval
+    executor.scheduleAtFixedRate(this::generateNewFlight, 0, generationIntervalMs, TimeUnit.MILLISECONDS);
 
     // Update existing flights every second
     executor.scheduleAtFixedRate(this::updateExistingFlights, 1, 1, TimeUnit.SECONDS);
   }
 
   private void generateNewFlight() {
+    // Only generate new flights if we haven't reached the limit
+    if (activeFlights.size() >= numberOfFlights) {
+      logger.debug("Maximum number of active flights ({}) reached", numberOfFlights);
+      return;
+    }
+
     try {
       String departureAirport = MAJOR_AIRPORTS.get(faker.random().nextInt(MAJOR_AIRPORTS.size()));
       String arrivalAirport;
@@ -101,44 +113,40 @@ public class FlightDataGenerator {
           departureAirport,
           arrivalAirport,
           scheduledDeparture,
-          scheduledDeparture, // Initially actual = scheduled
+          scheduledDeparture,
           "SCHEDULED"
       );
 
-      // Store flight state
+      sendEvent(event);
+
       FlightState state = new FlightState();
       state.scheduledDeparture = scheduledDeparture;
       state.departureAirport = departureAirport;
       state.arrivalAirport = arrivalAirport;
       state.delayMinutes = 0;
       state.isCompleted = false;
-      activeFlights.put(flightNumber, state);
 
-      sendEvent(event);
-    } catch (Exception e) {
-      logger.error("Error generating flight event", e);
+      activeFlights.put(flightNumber, state);
     } finally {
       MDC.remove("flight");
     }
   }
 
   private void updateExistingFlights() {
+    LocalDateTime now = LocalDateTime.now();
+
     activeFlights.forEach((flightNumber, state) -> {
       try {
         MDC.put("flight", flightNumber);
-        if (state.isCompleted) {
-          return;
-        }
+        if (!state.isCompleted) {
+          LocalDateTime scheduledDeparture = state.scheduledDeparture;
 
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime scheduledDeparture = state.scheduledDeparture;
-
-        // Update flight status based on time and random events
-        if (now.isAfter(scheduledDeparture.minusMinutes(60))) {
-          // Randomly introduce delays for some flights
-          if (state.delayMinutes == 0 && faker.random().nextInt(100) < 30) {
-            state.delayMinutes = faker.random().nextInt(15, 120);
-            logger.info("Flight {} delayed by {} minutes", flightNumber, state.delayMinutes);
+          // Randomly add delays as we approach departure time
+          if (now.isAfter(scheduledDeparture.minusMinutes(30)) && state.delayMinutes == 0) {
+            state.delayMinutes = faker.random().nextInt(0, 60);
+            if (state.delayMinutes > 0) {
+              logger.info("Flight {} delayed by {} minutes", flightNumber, state.delayMinutes);
+            }
           }
 
           FlightEvent event = new FlightEvent(
@@ -147,7 +155,7 @@ public class FlightDataGenerator {
               state.departureAirport,
               state.arrivalAirport,
               scheduledDeparture,
-              scheduledDeparture.plusMinutes(state.delayMinutes),
+              state.delayMinutes > 0 ? scheduledDeparture.plusMinutes(state.delayMinutes) : scheduledDeparture,
               state.delayMinutes > 0 ? "DELAYED" : "ON_TIME"
           );
 
@@ -166,8 +174,8 @@ public class FlightDataGenerator {
 
     // Clean up completed flights older than 1 hour
     activeFlights.entrySet().removeIf(entry ->
-                                          entry.getValue().isCompleted &&
-                                          entry.getValue().scheduledDeparture.plusHours(1).isBefore(LocalDateTime.now())
+        entry.getValue().isCompleted &&
+        entry.getValue().scheduledDeparture.plusHours(1).isBefore(LocalDateTime.now())
     );
   }
 
@@ -180,7 +188,7 @@ public class FlightDataGenerator {
           logger.error("Error sending event for flight {}", event.getFlightNumber(), exception);
         } else {
           logger.debug("Event sent for flight {} to partition {} offset {}",
-                       event.getFlightNumber(), metadata.partition(), metadata.offset());
+              event.getFlightNumber(), metadata.partition(), metadata.offset());
         }
       });
     } catch (Exception e) {
@@ -193,10 +201,29 @@ public class FlightDataGenerator {
   }
 
   public static void main(String[] args) {
-    String bootstrapServers = args.length > 0 ? args[0] : "localhost:29092";
-    String topic = args.length > 1 ? args[1] : "flight-status";
+    Properties config = new Properties();
+    
+    // Load from system properties
+    config.putAll(System.getProperties());
+    
+    // Override with environment variables if present
+    String bootstrapServers = System.getenv("KAFKA_BOOTSTRAP_SERVERS");
+    String topic = System.getenv("KAFKA_TOPIC");
+    String intervalMs = System.getenv("GENERATION_INTERVAL_MS");
+    String numFlights = System.getenv("NUMBER_OF_FLIGHTS");
+    
+    if (bootstrapServers != null) config.setProperty("kafka.bootstrap.servers", bootstrapServers);
+    if (topic != null) config.setProperty("kafka.topic", topic);
+    if (intervalMs != null) config.setProperty("generation.interval.ms", intervalMs);
+    if (numFlights != null) config.setProperty("number.of.flights", numFlights);
 
-    FlightDataGenerator generator = new FlightDataGenerator(bootstrapServers, topic);
+    // Override with command line arguments if present
+    if (args.length > 0) config.setProperty("kafka.bootstrap.servers", args[0]);
+    if (args.length > 1) config.setProperty("kafka.topic", args[1]);
+    if (args.length > 2) config.setProperty("generation.interval.ms", args[2]);
+    if (args.length > 3) config.setProperty("number.of.flights", args[3]);
+
+    FlightDataGenerator generator = new FlightDataGenerator(config);
     generator.startGenerating();
 
     Runtime.getRuntime().addShutdownHook(new Thread(() -> {

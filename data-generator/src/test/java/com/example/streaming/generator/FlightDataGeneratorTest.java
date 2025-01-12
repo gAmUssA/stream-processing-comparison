@@ -43,7 +43,13 @@ class FlightDataGeneratorTest {
 
   @BeforeEach
   void setUp() {
-    generator = new FlightDataGenerator(kafka.getBootstrapServers(), TOPIC);
+    Properties config = new Properties();
+    config.setProperty("kafka.bootstrap.servers", kafka.getBootstrapServers());
+    config.setProperty("kafka.topic", TOPIC);
+    config.setProperty("generation.interval.ms", "1000");
+    config.setProperty("number.of.flights", "5");
+
+    generator = new FlightDataGenerator(config);
 
     Properties props = new Properties();
     props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafka.getBootstrapServers());
@@ -58,40 +64,48 @@ class FlightDataGeneratorTest {
 
   @AfterEach
   void tearDown() {
-    generator.shutdown();
-    consumer.close();
+    if (generator != null) {
+      generator.shutdown();
+    }
+    if (consumer != null) {
+      consumer.close();
+    }
   }
 
   @Test
   void testGeneratesValidFlightEvents() throws Exception {
+    // Start generating events
     generator.startGenerating();
 
+    // Wait and collect events
     AtomicInteger eventCount = new AtomicInteger(0);
     long startTime = System.currentTimeMillis();
-    long timeout = 10000; // 10 seconds timeout
+    long timeout = 10000; // 10 seconds
 
-    while (eventCount.get() < 3 && System.currentTimeMillis() - startTime < timeout) {
+    while (eventCount.get() < 5 && System.currentTimeMillis() - startTime < timeout) {
       ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(1000));
       for (ConsumerRecord<String, String> record : records) {
+        String json = record.value();
+        FlightEvent event = objectMapper.readValue(json, FlightEvent.class);
+
+        // Verify event fields
+        assertNotNull(event.getFlightNumber(), "Flight number should not be null");
+        assertNotNull(event.getAirline(), "Airline should not be null");
+        assertNotNull(event.getDepartureAirport(), "Departure airport should not be null");
+        assertNotNull(event.getArrivalAirport(), "Arrival airport should not be null");
+        assertNotNull(event.getScheduledDepartureTime(), "Scheduled departure time should not be null");
+        assertNotNull(event.getActualDepartureTime(), "Actual departure time should not be null");
+        assertNotNull(event.getStatus(), "Status should not be null");
+
+        // Verify route key matches airports
+        assertEquals(event.getDepartureAirport() + "-" + event.getArrivalAirport(),
+            event.getRouteKey(), "Route key should match departure and arrival airports");
+
+        // Verify departure and arrival airports are different
+        assertNotEquals(event.getDepartureAirport(), event.getArrivalAirport(),
+            "Departure and arrival airports should be different");
+
         eventCount.incrementAndGet();
-
-        // Verify the event can be deserialized
-        FlightEvent event = objectMapper.readValue(record.value(), FlightEvent.class);
-
-        // Basic validation
-        assertNotNull(event.getFlightNumber());
-        assertNotNull(event.getAirline());
-        assertNotNull(event.getDepartureAirport());
-        assertNotNull(event.getArrivalAirport());
-        assertNotNull(event.getScheduledDepartureTime());
-        assertNotNull(event.getActualDepartureTime());
-        assertNotNull(event.getStatus());
-
-        // Flight number should be the key
-        assertEquals(event.getFlightNumber(), record.key());
-
-        // Airports should be different
-        assertNotEquals(event.getDepartureAirport(), event.getArrivalAirport());
       }
     }
 

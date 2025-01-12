@@ -25,7 +25,7 @@ The project consists of four main modules:
 |21
 
 |Apache Kafka®
-|3.8.0 (KRaft mode)
+|3.9.0 (KRaft mode)
 
 |Apache Flink
 |1.20.0
@@ -42,12 +42,32 @@ To run this project, you need:
 * Docker and Docker Compose
 * Gradle 8.5 or later
 
-== Building the Project
+== Building and Running
+
+The project uses a Makefile for common operations. Here are the available commands:
 
 [source,bash]
 ----
-./gradlew clean build
+make help          # Show help message with all available commands
+make build         # Build all applications
+make docker-up     # Start all containers (builds first)
+make docker-down   # Stop all containers
+make kafka-ready   # Wait for Kafka to be ready
+make clean         # Clean up everything (stops containers and prunes Docker)
 ----
+
+=== Quick Start
+
+1. Build and start all services:
++
+[source,bash]
+----
+make docker-up
+----
+
+2. The following services will be started:
+* Kafka broker (KRaft mode) at `localhost:29092` (external) and `kafka:9092` (internal)
+* Data generator service that produces flight events to the `flight-status` topic
 
 == Module Details
 
@@ -65,6 +85,29 @@ Generates simulated flight events and publishes them to Kafka topics. Features i
 * Flight status updates
 * Configurable generation rates
 
+Configuration options:
+
+[cols="2,1,2"]
+|===
+|Parameter |Environment Variable |Default Value
+
+|Bootstrap Servers
+|KAFKA_BOOTSTRAP_SERVERS
+|localhost:29092
+
+|Kafka Topic
+|KAFKA_TOPIC
+|flight-status
+
+|Generation Interval (ms)
+|GENERATION_INTERVAL_MS
+|1000
+
+|Number of Active Flights
+|NUMBER_OF_FLIGHTS
+|10
+|===
+
 === Kafka Streams Processor
 Implementation of stream processing using Apache Kafka® Streams API. Features:
 
@@ -76,69 +119,36 @@ Implementation of stream processing using Apache Kafka® Streams API. Features:
 === Flink Processor
 Implementation of stream processing using Apache Flink (in progress).
 
-== Running the Examples
+== Docker Setup
 
-=== Using Docker Compose
+The project uses Docker Compose with the following services:
 
-. Start Kafka using Docker Compose:
-+
-[source,bash]
-----
-docker compose up -d
-----
+=== Kafka
+* Uses Apache Kafka® 3.9.0 in KRaft mode (no ZooKeeper)
+* Exposes ports 9092 (internal) and 29092 (external)
+* Configured with transaction support and minimal replication for development
 
-. Run the data generator:
-+
-[source,bash]
-----
-./gradlew :data-generator:run
-----
+=== Data Generator
+* Built from Eclipse Temurin JRE 21 base image
+* Automatically starts when Kafka is healthy
+* Configurable through environment variables
+* Produces flight events to the configured Kafka topic
 
-=== Data Generator Configuration
+== Development
 
-The data generator accepts the following command-line arguments:
-
-* First argument: Bootstrap servers (default: localhost:29092)
-* Second argument: Topic name (default: flight-status)
-
-Example with custom configuration:
-[source,bash]
-----
-./gradlew :data-generator:run --args="localhost:29092 custom-topic"
-----
-
-=== Generated Data Format
-
-The data generator produces flight events in JSON format with the following structure:
-
-[source,json]
-----
-{
-  "flightNumber": "AA1234",
-  "airline": "AA",
-  "departureAirport": "JFK",
-  "arrivalAirport": "LAX",
-  "scheduledDepartureTime": "2025-01-11T15:40:29.000",
-  "actualDepartureTime": "2025-01-11T16:10:29.000",
-  "status": "DELAYED"
-}
-----
-
-== Testing
-
-The project includes comprehensive tests:
-
-* Unit tests for data models
-* Integration tests using Testcontainers with Confluent Kafka 7.8.0
-* End-to-end tests for data generation and processing
-* State store testing with RocksDB
-
-Run tests with:
+=== Running Tests
 [source,bash]
 ----
 ./gradlew test
 ----
 
+=== Code Style
+The project uses:
+
+* Gradle with Kotlin DSL for build scripts
+* AsciiDoc for documentation
+* GitHub CLI for repository management
+
 == License
 
-This project is licensed under the Apache License 2.0.
+This project is licensed under the MIT License - see the link:LICENSE[LICENSE] file for details.

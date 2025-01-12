@@ -1,5 +1,6 @@
 plugins {
     application
+    java
 }
 
 dependencies {
@@ -27,6 +28,21 @@ dependencies {
 
 application {
     mainClass.set("com.example.streaming.generator.FlightDataGenerator")
+}
+
+tasks.jar {
+    manifest {
+        attributes["Main-Class"] = "com.example.streaming.generator.FlightDataGenerator"
+    }
+    
+    // Make sure to depend on common project's jar task
+    dependsOn(":common:jar")
+    
+    // Include all dependencies in the JAR
+    from({
+        configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
+    })
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 tasks.test {
