@@ -27,10 +27,24 @@ help: ## Show this help message
 .PHONY: build-image
 build-image: ## Build Docker image locally
 	@echo "${BLUE}🔨 Building Java application...${RESET}"
-	@cd .. && ./gradlew :data-generator:clean :data-generator:jar
+	@cd .. && ./gradlew :data-generator:clean :data-generator:generateAvroJava :data-generator:jar
 	@echo "${BLUE}🏗️  Building Docker image...${RESET}"
 	@docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .
 	@echo "${GREEN}✅ Image built successfully!${RESET}"
+
+# Generate Java classes from Avro schemas
+.PHONY: generate-avro
+generate-avro: ## Generate Java classes from Avro schemas
+	@echo "${BLUE}📝 Generating Avro classes...${RESET}"
+	@cd .. && ./gradlew :data-generator:generateAvroJava
+	@echo "${GREEN}✅ Avro classes generated!${RESET}"
+
+# Run tests
+.PHONY: test
+test: ## Run tests
+	@echo "${BLUE}🧪 Running tests...${RESET}"
+	@cd .. && ./gradlew :data-generator:test
+	@echo "${GREEN}✅ Tests completed!${RESET}"
 
 # Tag the image with registry if provided
 .PHONY: tag-image

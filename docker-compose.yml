@@ -29,15 +29,37 @@ services:
       - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1
       - KAFKA_MIN_INSYNC_REPLICAS=1
 
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.8.0
+    hostname: schema-registry
+    ports:
+      - "8081:8081"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      - SCHEMA_REGISTRY_HOST_NAME=schema-registry
+      - SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS=kafka:9092
+      - SCHEMA_REGISTRY_LISTENERS=http://0.0.0.0:8081
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8081 || exit 1"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+
   data-generator:
+    image: gamussa/flight-data-generator:latest
     build: 
       context: ./data-generator
       dockerfile: Dockerfile
     depends_on:
       kafka:
         condition: service_healthy
+      schema-registry:
+        condition: service_healthy
     environment:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - KAFKA_TOPIC=flight-status
-      - GENERATION_INTERVAL_MS=1000
-      - NUMBER_OF_FLIGHTS=10
+      - SCHEMA_REGISTRY_URL=http://schema-registry:8081
+      - MESSAGE_COUNT=1000
+      - INTERVAL_MS=1000
+      - KAFKA_TOPIC=flight-status-avro

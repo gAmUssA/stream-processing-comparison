@@ -1,0 +1,78 @@
+{
+  "type": "record",
+  "name": "Flight",
+  "namespace": "com.example.streaming.model",
+  "doc": "Schema for flight data",
+  "fields": [
+    {
+      "name": "flightId",
+      "type": "string",
+      "doc": "Unique identifier for the flight"
+    },
+    {
+      "name": "flightNumber",
+      "type": "string",
+      "doc": "Flight number"
+    },
+    {
+      "name": "departureAirport",
+      "type": "string",
+      "doc": "IATA code of departure airport"
+    },
+    {
+      "name": "arrivalAirport",
+      "type": "string",
+      "doc": "IATA code of arrival airport"
+    },
+    {
+      "name": "departureTime",
+      "type": "long",
+      "doc": "Scheduled departure time in milliseconds since epoch"
+    },
+    {
+      "name": "arrivalTime",
+      "type": "long",
+      "doc": "Scheduled arrival time in milliseconds since epoch"
+    },
+    {
+      "name": "status",
+      "type": {
+        "type": "enum",
+        "name": "FlightStatus",
+        "symbols": ["SCHEDULED", "DELAYED", "DEPARTED", "ARRIVED", "CANCELLED"]
+      },
+      "doc": "Current status of the flight"
+    },
+    {
+      "name": "aircraft",
+      "type": {
+        "type": "record",
+        "name": "Aircraft",
+        "fields": [
+          {
+            "name": "model",
+            "type": "string",
+            "doc": "Aircraft model"
+          },
+          {
+            "name": "registration",
+            "type": "string",
+            "doc": "Aircraft registration number"
+          }
+        ]
+      },
+      "doc": "Aircraft details"
+    },
+    {
+      "name": "delayMinutes",
+      "type": ["null", "int"],
+      "default": null,
+      "doc": "Delay in minutes if flight is delayed"
+    },
+    {
+      "name": "updateTimestamp",
+      "type": "long",
+      "doc": "Timestamp when this record was generated"
+    }
+  ]
+}
