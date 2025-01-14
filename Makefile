@@ -6,7 +6,7 @@ BLUE := $(shell tput setaf 4)
 BOLD := $(shell tput bold)
 RESET := $(shell tput sgr0)
 
-.PHONY: help docker-up docker-down build clean kafka-ready
+.PHONY: help docker-up docker-down build clean kafka-ready data-generator-build data-generator-push data-generator-clean
 
 help: ## Show this help message
 	@echo '${YELLOW}Usage:${RESET}'
@@ -19,6 +19,21 @@ build: ## Build all applications
 	@echo "${BLUE}🔨 Building applications...${RESET}"
 	@./gradlew clean build
 	@echo "${GREEN}✅ Build complete!${RESET}"
+
+data-generator-build: ## Build data-generator Docker image
+	@echo "${BLUE}🏗️  Building data-generator...${RESET}"
+	@$(MAKE) -C data-generator build-image
+	@echo "${GREEN}✅ Data generator build complete!${RESET}"
+
+data-generator-push: ## Push data-generator image to registry
+	@echo "${BLUE}⬆️  Pushing data-generator image...${RESET}"
+	@$(MAKE) -C data-generator push-image
+	@echo "${GREEN}✅ Data generator push complete!${RESET}"
+
+data-generator-clean: ## Clean data-generator images
+	@echo "${BLUE}🧹 Cleaning data-generator...${RESET}"
+	@$(MAKE) -C data-generator clean
+	@echo "${GREEN}✅ Data generator cleanup complete!${RESET}"
 
 docker-up: build ## Start all containers
 	@echo "${BLUE}🐳 Starting Docker containers...${RESET}"
