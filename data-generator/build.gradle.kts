@@ -14,31 +14,35 @@ dependencies {
     val confluentVersion = "7.8.0"
 
     implementation(project(":common"))
-    
+
     implementation("org.apache.kafka:kafka-clients:$kafkaVersion")
     implementation("net.datafaker:datafaker:2.4.2")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.2")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
-    
+
     // Avro and Schema Registry dependencies
     implementation("org.apache.avro:avro:$avroVersion")
     implementation("io.confluent:kafka-avro-serializer:$confluentVersion")
     implementation("io.confluent:kafka-schema-registry-client:$confluentVersion")
-    
+
     compileOnly("org.projectlombok:lombok:$lombokVersion")
     annotationProcessor("org.projectlombok:lombok:$lombokVersion")
-    
+
     testCompileOnly("org.projectlombok:lombok:$lombokVersion")
     testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
     testImplementation("org.testcontainers:junit-jupiter:$testcontainersVersion")
     testImplementation("org.testcontainers:kafka:$testcontainersVersion")
+    testImplementation("com.github.testcontainers-all-things-kafka:cp-testcontainers:f684563711")
 }
 
 repositories {
     mavenCentral()
+    maven {
+        url = uri("https://jitpack.io")
+    }
     maven {
         url = uri("https://packages.confluent.io/maven/")
     }
@@ -68,10 +72,10 @@ tasks.jar {
     manifest {
         attributes["Main-Class"] = "com.example.streaming.generator.AvroFlightDataGenerator"
     }
-    
+
     // Make sure to depend on common project's jar task
     dependsOn(":common:jar")
-    
+
     // Include all dependencies in the JAR
     from({
         configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }

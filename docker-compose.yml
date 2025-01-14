@@ -49,7 +49,7 @@ services:
 
   data-generator:
     image: gamussa/flight-data-generator:latest
-    build: 
+    build:
       context: ./data-generator
       dockerfile: Dockerfile
     depends_on:

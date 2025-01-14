@@ -22,12 +22,18 @@ import java.util.concurrent.TimeUnit;
 public class AvroFlightDataGenerator {
     private static final String[] AIRPORTS = {"JFK", "LAX", "ORD", "DFW", "DEN", "SFO", "SEA", "LAS", "MCO", "EWR"};
     private static final String[] AIRCRAFT_MODELS = {"Boeing 737", "Airbus A320", "Boeing 787", "Airbus A350", "Embraer E190"};
-    private static final String TOPIC = "flights";
+    private static final String DEFAULT_TOPIC = "flight-status-avro";
+    
     private final KafkaProducer<String, Flight> producer;
     private final Faker faker;
     private final Random random;
+    private final String topic;
 
     public AvroFlightDataGenerator(String bootstrapServers, String schemaRegistryUrl) {
+        this(bootstrapServers, schemaRegistryUrl, DEFAULT_TOPIC);
+    }
+
+    public AvroFlightDataGenerator(String bootstrapServers, String schemaRegistryUrl, String topic) {
         Properties props = new Properties();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
@@ -37,6 +43,7 @@ public class AvroFlightDataGenerator {
         this.producer = new KafkaProducer<>(props);
         this.faker = new Faker();
         this.random = new Random();
+        this.topic = topic;
     }
 
     private Flight generateFlight() {
@@ -87,7 +94,7 @@ public class AvroFlightDataGenerator {
             for (int i = 0; i < messageCount; i++) {
                 Flight flight = generateFlight();
                 ProducerRecord<String, Flight> record = 
-                    new ProducerRecord<>(TOPIC, flight.getFlightId(), flight);
+                    new ProducerRecord<>(topic, flight.getFlightId(), flight);
 
                 producer.send(record, (metadata, exception) -> {
                     if (exception != null) {
@@ -115,8 +122,9 @@ public class AvroFlightDataGenerator {
         String schemaRegistryUrl = System.getenv().getOrDefault("SCHEMA_REGISTRY_URL", "http://localhost:8081");
         int messageCount = Integer.parseInt(System.getenv().getOrDefault("MESSAGE_COUNT", "100"));
         long intervalMs = Long.parseLong(System.getenv().getOrDefault("INTERVAL_MS", "1000"));
+        String topic = System.getenv().getOrDefault("TOPIC", DEFAULT_TOPIC);
 
-        AvroFlightDataGenerator generator = new AvroFlightDataGenerator(bootstrapServers, schemaRegistryUrl);
+        AvroFlightDataGenerator generator = new AvroFlightDataGenerator(bootstrapServers, schemaRegistryUrl, topic);
         generator.generateData(messageCount, intervalMs);
     }
 }

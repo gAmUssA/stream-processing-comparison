@@ -2,6 +2,11 @@ package com.example.streaming.generator;
 
 import com.example.streaming.model.Flight;
 
+import net.christophschubert.cp.testcontainers.CPTestContainerFactory;
+import net.christophschubert.cp.testcontainers.SchemaRegistryContainer;
+
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -9,12 +14,9 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.Network;
-import org.testcontainers.kafka.ConfluentKafkaContainer;
-import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.containers.KafkaContainer;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -32,41 +34,31 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
+//@Testcontainers
 class AvroFlightDataGeneratorTest {
 
-  private static final String KAFKA_IMAGE = "confluentinc/cp-kafka:7.5.1";
-  private static final String SCHEMA_REGISTRY_IMAGE = "confluentinc/cp-schema-registry:7.5.1";
-  private static Network network;
-  private static ConfluentKafkaContainer kafka;
-  private static GenericContainer<?> schemaRegistry;
+  private CPTestContainerFactory testContainerFactory;
+  private static KafkaContainer kafka;
+  private static SchemaRegistryContainer schemaRegistry;
 
-  @BeforeAll
-  static void setUp() {
-    network = Network.newNetwork();
+  @BeforeEach
+  public void setUp() {
+    // Initialize container factory
+    testContainerFactory = new CPTestContainerFactory().withTag("7.8.0");
 
-    // Start Kafka
-    kafka = new ConfluentKafkaContainer(DockerImageName.parse(KAFKA_IMAGE))
-        .withNetwork(network)
-        .withNetworkAliases("kafka");
-    kafka.start();
+    // Create and start Kafka and Schema Registry containers
+    kafka = testContainerFactory.createKafka();
+    schemaRegistry = testContainerFactory.createSchemaRegistry(kafka);
 
-    // Start Schema Registry
-    schemaRegistry = new GenericContainer<>(DockerImageName.parse(SCHEMA_REGISTRY_IMAGE))
-        .withNetwork(network)
-        .withNetworkAliases("schema-registry")
-        .withEnv("SCHEMA_REGISTRY_HOST_NAME", "schema-registry")
-        .withEnv("SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS",
-                 "PLAINTEXT://kafka:9092")
-        .withEnv("SCHEMA_REGISTRY_LISTENERS", "http://0.0.0.0:8081")
-        .withExposedPorts(8081);
-    schemaRegistry.start();
+    schemaRegistry.start(); // Starts both Schema Registry and Kafka containers
   }
 
   @AfterAll
   static void tearDown() {
-    schemaRegistry.stop();
+    if (schemaRegistry != null) {
+      schemaRegistry.stop();
+    }
     kafka.stop();
-    network.close();
   }
 
   @Test
@@ -74,18 +66,24 @@ class AvroFlightDataGeneratorTest {
     String bootstrapServers = kafka.getBootstrapServers();
     String schemaRegistryUrl = "http://localhost:" + schemaRegistry.getMappedPort(8081);
 
+    // Client Props
+    final String topicName = "flights-avro-stuff-test";
+
+    // Create a topic
+    final Properties props = createConsumerConfig(bootstrapServers, schemaRegistryUrl);
+    AdminClient adminClient = AdminClient.create(props);
+    adminClient.createTopics(Collections.singleton(new NewTopic(topicName, 2, (short) 1))).all().get();
+    adminClient.close();
+
     // Start the generator
-    AvroFlightDataGenerator generator = new AvroFlightDataGenerator(bootstrapServers, schemaRegistryUrl);
+    AvroFlightDataGenerator generator = new AvroFlightDataGenerator(bootstrapServers, schemaRegistryUrl, topicName);
     int expectedMessages = 5;
     Thread generatorThread = new Thread(() -> generator.generateData(expectedMessages, 100));
     generatorThread.start();
-
-    // Configure consumer
-    final Properties props = createConsumerConfig(bootstrapServers, schemaRegistryUrl);
-
+    
     List<Flight> receivedFlights = new ArrayList<>();
     try (KafkaConsumer<String, Flight> consumer = new KafkaConsumer<>(props)) {
-      consumer.subscribe(Collections.singletonList("flights"));
+      consumer.subscribe(Collections.singletonList(topicName));
 
       int retries = 10;
       while (receivedFlights.size() < expectedMessages && retries > 0) {
