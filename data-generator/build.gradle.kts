@@ -10,7 +10,7 @@ dependencies {
     val slf4jVersion = "2.0.16"
     val logbackVersion = "1.5.16"
     val testcontainersVersion = "1.20.4"
-    val avroVersion = "1.11.3"
+    val avroVersion = "1.12.0"
     val confluentVersion = "7.8.0"
 
     implementation(project(":common"))
@@ -35,7 +35,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
     testImplementation("org.testcontainers:junit-jupiter:$testcontainersVersion")
     testImplementation("org.testcontainers:kafka:$testcontainersVersion")
-    testImplementation("com.github.testcontainers-all-things-kafka:cp-testcontainers:f684563711")
+    testImplementation("com.github.testcontainers-all-things-kafka:cp-testcontainers:0.2.1")
 }
 
 repositories {
