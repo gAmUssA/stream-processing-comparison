@@ -53,8 +53,8 @@ public class FlightDelayProcessor {
     props.put(StreamsConfig.APPLICATION_ID_CONFIG, "flight-delay-processor");
     props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:29092");
     props.put(StreamsConfig.PROCESSING_GUARANTEE_CONFIG, StreamsConfig.EXACTLY_ONCE_V2);
-    props.put(StreamsConfig.ROCKSDB_CONFIG_SETTER_CLASS_CONFIG, CustomRocksDBConfig.class.getName());
-    props.put(StreamsConfig.STATESTORE_CACHE_MAX_BYTES_CONFIG, 0);
+    props.put(StreamsConfig.ROCKSDB_CONFIG_SETTER_CLASS_CONFIG, CustomRocksDBConfig.class);
+    props.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0);
     props.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 0);
 
     Topology topology = buildTopology();
@@ -101,11 +101,7 @@ public class FlightDelayProcessor {
         .groupByKey(Grouped.with(Serdes.String(), CustomSerdes.flightEvent()))
         .windowedBy(timeWindow)
         .aggregate(
-            () -> {
-              RouteDelayStats stats = new RouteDelayStats();
-              stats.setCurrentWindowSize(0);
-              return stats;
-            },
+            RouteDelayStats::new,
             (key, value, aggregate) -> {
               try {
                 logger.debug("Aggregating flight {} into stats for route {}", value, key);
@@ -120,7 +116,6 @@ public class FlightDelayProcessor {
                 .withKeySerde(Serdes.String())
                 .withValueSerde(CustomSerdes.routeDelayStats())
                 .withRetention(Duration.ofHours(24))
-                .withLoggingEnabled(new HashMap<>())
                 .withCachingEnabled()
         );
 

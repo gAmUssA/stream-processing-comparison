@@ -7,7 +7,7 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
-import org.apache.flink.streaming.api.functions.timestamps.AscendingTimestampExtractor;
+import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -48,12 +48,9 @@ class FlightDelayProcessorTest {
         DataStream<FlightEvent> input = env
             .fromCollection(events)
             .assignTimestampsAndWatermarks(
-                new AscendingTimestampExtractor<FlightEvent>() {
-                    @Override
-                    public long extractAscendingTimestamp(FlightEvent event) {
-                        return event.getEventTimestamp();
-                    }
-                }
+                WatermarkStrategy
+                    .<FlightEvent>forMonotonousTimestamps()
+                    .withTimestampAssigner((evt, ts) -> evt.getEventTimestamp())
             );
 
         // Process events
@@ -92,12 +89,9 @@ class FlightDelayProcessorTest {
         DataStream<FlightEvent> input = env
             .fromCollection(events)
             .assignTimestampsAndWatermarks(
-                new AscendingTimestampExtractor<FlightEvent>() {
-                    @Override
-                    public long extractAscendingTimestamp(FlightEvent event) {
-                        return event.getEventTimestamp();
-                    }
-                }
+                WatermarkStrategy
+                    .<FlightEvent>forMonotonousTimestamps()
+                    .withTimestampAssigner((evt, ts) -> evt.getEventTimestamp())
             );
 
         // Process events
