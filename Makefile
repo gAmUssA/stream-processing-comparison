@@ -35,7 +35,7 @@ data-generator-clean: ## Clean data-generator images
 	@$(MAKE) -C data-generator clean
 	@echo "${GREEN}✅ Data generator cleanup complete!${RESET}"
 
-docker-up: build ## Start all containers
+docker-up: ##build ## Start all containers
 	@echo "${BLUE}🐳 Starting Docker containers...${RESET}"
 	@docker compose up -d --build
 	@$(MAKE) kafka-ready

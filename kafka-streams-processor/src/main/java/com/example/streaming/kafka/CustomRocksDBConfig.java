@@ -2,6 +2,7 @@ package com.example.streaming.kafka;
 
 import org.apache.kafka.streams.state.RocksDBConfigSetter;
 import org.rocksdb.BlockBasedTableConfig;
+import org.rocksdb.LRUCache;
 import org.rocksdb.Options;
 
 import java.util.Map;
@@ -14,7 +15,8 @@ public class CustomRocksDBConfig implements RocksDBConfigSetter {
         BlockBasedTableConfig tableConfig = (BlockBasedTableConfig) options.tableFormatConfig();
         
         // Optimize for point lookups
-        tableConfig.setBlockCacheSize(50 * 1024 * 1024L); // 50MB block cache
+        //tableConfig.setBlockCacheSize(50 * 1024 * 1024L); // 50MB block cache
+        tableConfig.setBlockCache(new LRUCache(50 * 1024 * 1024L)); // 50MB block cache
         tableConfig.setCacheIndexAndFilterBlocks(true);
         
         options.setTableFormatConfig(tableConfig);

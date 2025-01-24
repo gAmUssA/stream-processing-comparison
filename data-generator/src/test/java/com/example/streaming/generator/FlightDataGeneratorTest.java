@@ -91,18 +91,18 @@ class FlightDataGeneratorTest {
         // Verify event fields
         assertNotNull(event.getFlightNumber(), "Flight number should not be null");
         assertNotNull(event.getAirline(), "Airline should not be null");
-        assertNotNull(event.getDepartureAirport(), "Departure airport should not be null");
-        assertNotNull(event.getArrivalAirport(), "Arrival airport should not be null");
-        assertNotNull(event.getScheduledDepartureTime(), "Scheduled departure time should not be null");
-        assertNotNull(event.getActualDepartureTime(), "Actual departure time should not be null");
+        assertNotNull(event.getOrigin(), "Departure airport should not be null");
+        assertNotNull(event.getDestination(), "Arrival airport should not be null");
+        assertNotNull(event.getScheduledDeparture(), "Scheduled departure time should not be null");
+        assertNotNull(event.getActualDeparture(), "Actual departure time should not be null");
         assertNotNull(event.getStatus(), "Status should not be null");
 
         // Verify route key matches airports
-        assertEquals(event.getDepartureAirport() + "-" + event.getArrivalAirport(),
-            event.getRouteKey(), "Route key should match departure and arrival airports");
+        assertEquals(event.getOrigin() + "-" + event.getDestination(),
+            event.getRouteKey(), "Route key should match origin-destination pattern");
 
         // Verify departure and arrival airports are different
-        assertNotEquals(event.getDepartureAirport(), event.getArrivalAirport(),
+        assertNotEquals(event.getOrigin(), event.getDestination(),
             "Departure and arrival airports should be different");
 
         eventCount.incrementAndGet();

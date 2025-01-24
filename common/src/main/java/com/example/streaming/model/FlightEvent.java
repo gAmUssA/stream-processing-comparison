@@ -1,47 +1,47 @@
 package com.example.streaming.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Objects;
+import java.time.temporal.ChronoUnit;
 
 /**
- * Represents a flight event in our system.
- * This class is designed to work seamlessly with both Kafka Streams and Flink serialization.
+ * Represents a flight event with status information.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FlightEvent {
     private String flightNumber;
     private String airline;
-    private String departureAirport;
-    private String arrivalAirport;
-    
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
-    private LocalDateTime scheduledDepartureTime;
-    
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
-    private LocalDateTime actualDepartureTime;
-    
+    private String origin;
+    private String destination;
+    private LocalDateTime scheduledDeparture;
+    private LocalDateTime actualDeparture;
     private String status;
+
+    @JsonCreator
+    public FlightEvent(
+        @JsonProperty("flightNumber") String flightNumber,
+        @JsonProperty("airline") String airline,
+        @JsonProperty("origin") String origin,
+        @JsonProperty("destination") String destination,
+        @JsonProperty("scheduledDeparture") LocalDateTime scheduledDeparture,
+        @JsonProperty("actualDeparture") LocalDateTime actualDeparture,
+        @JsonProperty("status") String status
+    ) {
+        this.flightNumber = flightNumber;
+        this.airline = airline;
+        this.origin = origin;
+        this.destination = destination;
+        this.scheduledDeparture = scheduledDeparture;
+        this.actualDeparture = actualDeparture;
+        this.status = status;
+    }
 
     public FlightEvent() {
         // Default constructor for Jackson
-    }
-
-    public FlightEvent(String flightNumber, String airline, String departureAirport, String arrivalAirport,
-                      LocalDateTime scheduledDepartureTime, LocalDateTime actualDepartureTime, String status) {
-        this.flightNumber = flightNumber;
-        this.airline = airline;
-        this.departureAirport = departureAirport;
-        this.arrivalAirport = arrivalAirport;
-        this.scheduledDepartureTime = scheduledDepartureTime;
-        this.actualDepartureTime = actualDepartureTime;
-        this.status = status;
     }
 
     public String getFlightNumber() {
@@ -60,46 +60,36 @@ public class FlightEvent {
         this.airline = airline;
     }
 
-    public String getDepartureAirport() {
-        return departureAirport;
+    public String getOrigin() {
+        return origin;
     }
 
-    public void setDepartureAirport(String departureAirport) {
-        this.departureAirport = departureAirport;
+    public void setOrigin(String origin) {
+        this.origin = origin;
     }
 
-    public String getArrivalAirport() {
-        return arrivalAirport;
+    public String getDestination() {
+        return destination;
     }
 
-    public void setArrivalAirport(String arrivalAirport) {
-        this.arrivalAirport = arrivalAirport;
+    public void setDestination(String destination) {
+        this.destination = destination;
     }
 
-    public LocalDateTime getScheduledDepartureTime() {
-        return scheduledDepartureTime;
+    public LocalDateTime getScheduledDeparture() {
+        return scheduledDeparture;
     }
 
-    @JsonSetter
-    public void setScheduledDepartureTime(LocalDateTime scheduledDepartureTime) {
-        this.scheduledDepartureTime = scheduledDepartureTime;
+    public void setScheduledDeparture(LocalDateTime scheduledDeparture) {
+        this.scheduledDeparture = scheduledDeparture;
     }
 
-    public void setScheduledDepartureTime(Instant scheduledDepartureTime) {
-        this.scheduledDepartureTime = LocalDateTime.ofInstant(scheduledDepartureTime, ZoneOffset.UTC);
+    public LocalDateTime getActualDeparture() {
+        return actualDeparture;
     }
 
-    public LocalDateTime getActualDepartureTime() {
-        return actualDepartureTime;
-    }
-
-    @JsonSetter
-    public void setActualDepartureTime(LocalDateTime actualDepartureTime) {
-        this.actualDepartureTime = actualDepartureTime;
-    }
-
-    public void setActualDepartureTime(Instant actualDepartureTime) {
-        this.actualDepartureTime = LocalDateTime.ofInstant(actualDepartureTime, ZoneOffset.UTC);
+    public void setActualDeparture(LocalDateTime actualDeparture) {
+        this.actualDeparture = actualDeparture;
     }
 
     public String getStatus() {
@@ -110,57 +100,40 @@ public class FlightEvent {
         this.status = status;
     }
 
-    public double getDelayMinutes() {
-        if (scheduledDepartureTime == null || actualDepartureTime == null) {
-            return 0.0;
-        }
-        return Duration.between(scheduledDepartureTime, actualDepartureTime).toMinutes();
-    }
-
-    public String getRouteKey() {
-        return departureAirport + "-" + arrivalAirport;
-    }
-
     public boolean isValid() {
         return flightNumber != null && !flightNumber.isEmpty() &&
                airline != null && !airline.isEmpty() &&
-               departureAirport != null && !departureAirport.isEmpty() &&
-               arrivalAirport != null && !arrivalAirport.isEmpty() &&
-               scheduledDepartureTime != null &&
-               actualDepartureTime != null &&
+               origin != null && !origin.isEmpty() &&
+               destination != null && !destination.isEmpty() &&
+               scheduledDeparture != null &&
                status != null && !status.isEmpty();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        FlightEvent that = (FlightEvent) o;
-        return Objects.equals(flightNumber, that.flightNumber) &&
-               Objects.equals(airline, that.airline) &&
-               Objects.equals(departureAirport, that.departureAirport) &&
-               Objects.equals(arrivalAirport, that.arrivalAirport) &&
-               Objects.equals(scheduledDepartureTime, that.scheduledDepartureTime) &&
-               Objects.equals(actualDepartureTime, that.actualDepartureTime) &&
-               Objects.equals(status, that.status);
+    public String getRouteKey() {
+        return origin + "-" + destination;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(flightNumber, airline, departureAirport, arrivalAirport,
-                          scheduledDepartureTime, actualDepartureTime, status);
+    public double getDelayMinutes() {
+        if (scheduledDeparture == null || actualDeparture == null) {
+            return 0.0;
+        }
+        return ChronoUnit.MINUTES.between(scheduledDeparture, actualDeparture);
+    }
+
+    public long getEventTimestamp() {
+        if (actualDeparture != null) {
+            return actualDeparture.toInstant(ZoneOffset.UTC).toEpochMilli();
+        } else if (scheduledDeparture != null) {
+            return scheduledDeparture.toInstant(ZoneOffset.UTC).toEpochMilli();
+        }
+        return System.currentTimeMillis(); // Default to current time if no timestamps available
     }
 
     @Override
     public String toString() {
-        return "FlightEvent{" +
-               "flightNumber='" + flightNumber + '\'' +
-               ", airline='" + airline + '\'' +
-               ", departureAirport='" + departureAirport + '\'' +
-               ", arrivalAirport='" + arrivalAirport + '\'' +
-               ", scheduledDepartureTime=" + scheduledDepartureTime +
-               ", actualDepartureTime=" + actualDepartureTime +
-               ", status='" + status + '\'' +
-               '}';
+        return String.format(
+            "FlightEvent{flightNumber='%s', airline='%s', origin='%s', destination='%s', scheduled='%s', actual='%s', status='%s'}",
+            flightNumber, airline, origin, destination, scheduledDeparture, actualDeparture, status
+        );
     }
 }

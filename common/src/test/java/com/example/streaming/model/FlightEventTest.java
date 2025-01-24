@@ -75,10 +75,10 @@ class FlightEventTest {
         
         assertEquals(event.getFlightNumber(), deserialized.getFlightNumber());
         assertEquals(event.getAirline(), deserialized.getAirline());
-        assertEquals(event.getDepartureAirport(), deserialized.getDepartureAirport());
-        assertEquals(event.getArrivalAirport(), deserialized.getArrivalAirport());
-        assertEquals(event.getScheduledDepartureTime(), deserialized.getScheduledDepartureTime());
-        assertEquals(event.getActualDepartureTime(), deserialized.getActualDepartureTime());
+        assertEquals(event.getOrigin(), deserialized.getOrigin());
+        assertEquals(event.getDestination(), deserialized.getDestination());
+        assertEquals(event.getScheduledDeparture(), deserialized.getScheduledDeparture());
+        assertEquals(event.getActualDeparture(), deserialized.getActualDeparture());
         assertEquals(event.getStatus(), deserialized.getStatus());
         assertEquals(event.getRouteKey(), deserialized.getRouteKey());
         assertEquals(event.getDelayMinutes(), deserialized.getDelayMinutes());

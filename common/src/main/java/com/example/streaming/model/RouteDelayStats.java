@@ -18,6 +18,7 @@ public class RouteDelayStats {
     private int currentWindowSize;
     private double averageDelay;
     private boolean highRiskRoute;
+    private long lastUpdateTimestamp;
 
     @JsonCreator
     public RouteDelayStats(
@@ -32,25 +33,24 @@ public class RouteDelayStats {
         this.currentWindowSize = currentWindowSize;
         this.averageDelay = averageDelay;
         this.highRiskRoute = highRiskRoute;
+        this.lastUpdateTimestamp = 0L;
     }
 
     public RouteDelayStats() {
         this(null, new ArrayList<>(), 0, 0.0, false);
     }
 
-    public void addFlight(FlightEvent event) {
+    public void addDelay(double delayMinutes, long timestamp) {
         if (routeKey == null) {
-            routeKey = event.getRouteKey();
             delays = new ArrayList<>();
             currentWindowSize = 0;
             averageDelay = 0.0;
             highRiskRoute = false;
         }
 
-        // Get delay in minutes from the event
-        double delayMinutes = event.getDelayMinutes();
         delays.add(delayMinutes);
         currentWindowSize++;
+        lastUpdateTimestamp = timestamp;
 
         // Recalculate average delay
         averageDelay = delays.stream()
@@ -63,6 +63,10 @@ public class RouteDelayStats {
         // 1. There are at least 5 flights in the window
         // 2. The average delay is more than 30 minutes
         highRiskRoute = currentWindowSize >= 5 && averageDelay > 30.0;
+    }
+
+    public void addFlight(FlightEvent event) {
+        addDelay(event.getDelayMinutes(), event.getEventTimestamp());
     }
 
     // Getters and setters
@@ -111,6 +115,14 @@ public class RouteDelayStats {
 
     public void setHighRiskRoute(boolean highRiskRoute) {
         this.highRiskRoute = highRiskRoute;
+    }
+
+    public long getLastUpdateTimestamp() {
+        return lastUpdateTimestamp;
+    }
+
+    public void setLastUpdateTimestamp(long lastUpdateTimestamp) {
+        this.lastUpdateTimestamp = lastUpdateTimestamp;
     }
 
     @Override

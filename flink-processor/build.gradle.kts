@@ -3,14 +3,20 @@ plugins {
     id("com.gradleup.shadow") version "8.3.5"
 }
 
-val flinkVersion: String by rootProject.extra
+val flinkVersion = "1.20.0"
+val kafkaVersion = "3.8.0"
 val lombokVersion: String by rootProject.extra
 val slf4jVersion: String by rootProject.extra
 val logbackVersion: String by rootProject.extra
+val junitVersion = "5.10.1"
 
 // Configure the application plugin
 application {
-    mainClass.set("com.example.flink.FlinkProcessor")
+    mainClass.set("com.example.streaming.flink.FlightDelayProcessor")
+}
+
+repositories {
+    mavenCentral()
 }
 
 configurations {
@@ -41,6 +47,15 @@ dependencies {
     compileOnly("org.projectlombok:lombok:${lombokVersion}")
     annotationProcessor("org.projectlombok:lombok:${lombokVersion}")
 
+    // Testing dependencies
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
+    testImplementation("org.apache.flink:flink-test-utils:${flinkVersion}")
+    testImplementation("org.apache.flink:flink-runtime:${flinkVersion}")
+    testImplementation("org.apache.flink:flink-streaming-java:${flinkVersion}:tests")
+    testImplementation("org.assertj:assertj-core:3.24.2")
+    testImplementation("org.mockito:mockito-core:5.8.0")
+
     // Mark Flink dependencies as 'provided' for the shadow JAR
     flinkShadowJar("org.apache.flink:flink-streaming-java:${flinkVersion}")
     flinkShadowJar("org.apache.flink:flink-clients:${flinkVersion}")
@@ -48,6 +63,18 @@ dependencies {
     flinkShadowJar("org.apache.flink:flink-connector-kafka:3.4.0-1.20")
     flinkShadowJar("org.apache.flink:flink-runtime-web:${flinkVersion}")
     flinkShadowJar("org.apache.flink:flink-java:${flinkVersion}")
+}
+
+tasks.test {
+    useJUnitPlatform()
+    testLogging {
+        events("passed", "skipped", "failed")
+    }
+    jvmArgs = listOf(
+        "--add-opens=java.base/java.util=ALL-UNNAMED",
+        "--add-opens=java.base/java.lang=ALL-UNNAMED",
+        "--add-opens=java.base/java.time=ALL-UNNAMED"
+    )
 }
 
 // Configure the shadow JAR

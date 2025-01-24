@@ -29,6 +29,7 @@ import org.slf4j.MDC;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -116,19 +117,19 @@ class FlightDelayProcessorTest {
     FlightEvent flight1 = new FlightEvent();
     flight1.setFlightNumber("AA123");
     flight1.setAirline("AA");
-    flight1.setDepartureAirport("JFK");
-    flight1.setArrivalAirport("LAX");
-    flight1.setScheduledDepartureTime(now);
-    flight1.setActualDepartureTime(now.plusMinutes(30)); // 30 min delay
+    flight1.setOrigin("JFK");
+    flight1.setDestination("LAX");
+    flight1.setScheduledDeparture(now);
+    flight1.setActualDeparture(now.plusMinutes(30)); // 30 min delay
     flight1.setStatus("DELAYED");
 
     FlightEvent flight2 = new FlightEvent();
     flight2.setFlightNumber("AA456");
     flight2.setAirline("AA");
-    flight2.setDepartureAirport("JFK");
-    flight2.setArrivalAirport("LAX");
-    flight2.setScheduledDepartureTime(now.plusMinutes(5));
-    flight2.setActualDepartureTime(now.plusMinutes(25)); // 20 min delay
+    flight2.setOrigin("JFK");
+    flight2.setDestination("LAX");
+    flight2.setScheduledDeparture(now.plusMinutes(5));
+    flight2.setActualDeparture(now.plusMinutes(25)); // 20 min delay
     flight2.setStatus("DELAYED");
 
     // Act
@@ -181,10 +182,10 @@ class FlightDelayProcessorTest {
       FlightEvent flight = new FlightEvent();
       flight.setFlightNumber("AA" + i);
       flight.setAirline("AA");
-      flight.setDepartureAirport("JFK");
-      flight.setArrivalAirport("LAX");
-      flight.setScheduledDepartureTime(now.plusMinutes(i * 5));
-      flight.setActualDepartureTime(now.plusMinutes((i * 5) + 60));
+      flight.setOrigin("JFK");
+      flight.setDestination("LAX");
+      flight.setScheduledDeparture(now.plusMinutes(i * 5));
+      flight.setActualDeparture(now.plusMinutes((i * 5) + 60));
       flight.setStatus("DELAYED");
 
       String flightJson = objectMapper.writeValueAsString(flight);
@@ -197,10 +198,10 @@ class FlightDelayProcessorTest {
     FlightEvent flight = new FlightEvent();
     flight.setFlightNumber("AA5");
     flight.setAirline("AA");
-    flight.setDepartureAirport("JFK");
-    flight.setArrivalAirport("LAX");
-    flight.setScheduledDepartureTime(now.plusMinutes(25));
-    flight.setActualDepartureTime(now.plusMinutes(85));
+    flight.setOrigin("JFK");
+    flight.setDestination("LAX");
+    flight.setScheduledDeparture(now.plusMinutes(25));
+    flight.setActualDeparture(now.plusMinutes(85));
     flight.setStatus("DELAYED");
 
     String flightJson = objectMapper.writeValueAsString(flight);
@@ -225,10 +226,10 @@ class FlightDelayProcessorTest {
     FlightEvent flight = new FlightEvent();
     flight.setFlightNumber("AA123");
     flight.setAirline("AA");
-    flight.setDepartureAirport("JFK");
-    flight.setArrivalAirport("LAX");
-    flight.setScheduledDepartureTime(now);
-    flight.setActualDepartureTime(now.plusSeconds(1800)); // 30 min delay
+    flight.setOrigin("JFK");
+    flight.setDestination("LAX");
+    flight.setScheduledDeparture(LocalDateTime.ofInstant(now, ZoneOffset.UTC));
+    flight.setActualDeparture(LocalDateTime.ofInstant(now.plusSeconds(1800), ZoneOffset.UTC)); // 30 min delay
     flight.setStatus("DELAYED");
 
     // Act
