@@ -8,7 +8,7 @@ val kafkaVersion = "3.8.0"
 val lombokVersion: String by rootProject.extra
 val slf4jVersion: String by rootProject.extra
 val logbackVersion: String by rootProject.extra
-val junitVersion = "5.10.1"
+val junitVersion = "5.11.4"
 
 // Configure the application plugin
 application {
@@ -53,8 +53,8 @@ dependencies {
     testImplementation("org.apache.flink:flink-test-utils:${flinkVersion}")
     testImplementation("org.apache.flink:flink-runtime:${flinkVersion}")
     testImplementation("org.apache.flink:flink-streaming-java:${flinkVersion}:tests")
-    testImplementation("org.assertj:assertj-core:3.24.2")
-    testImplementation("org.mockito:mockito-core:5.8.0")
+    testImplementation("org.assertj:assertj-core:3.27.3")
+    testImplementation("org.mockito:mockito-core:5.15.2")
 
     // Mark Flink dependencies as 'provided' for the shadow JAR
     flinkShadowJar("org.apache.flink:flink-streaming-java:${flinkVersion}")
