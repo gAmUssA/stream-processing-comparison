@@ -1,33 +1,36 @@
 package com.example.streaming.generator;
 
-import com.example.streaming.model.Aircraft;
 import com.example.streaming.model.Flight;
-import com.example.streaming.model.FlightStatus;
-import io.confluent.kafka.serializers.KafkaAvroSerializer;
-import lombok.extern.slf4j.Slf4j;
-import net.datafaker.Faker;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
+import io.confluent.kafka.serializers.KafkaAvroSerializer;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
+import net.datafaker.Faker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Properties;
 import java.util.Random;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-@Slf4j
+/**
+ * Generates random flight data and sends it to a Kafka topic.
+ */
 public class AvroFlightDataGenerator {
+    private static final Logger logger = LoggerFactory.getLogger(AvroFlightDataGenerator.class);
     private static final String[] AIRPORTS = {"JFK", "LAX", "ORD", "DFW", "DEN", "SFO", "SEA", "LAS", "MCO", "EWR"};
-    private static final String[] AIRCRAFT_MODELS = {"Boeing 737", "Airbus A320", "Boeing 787", "Airbus A350", "Embraer E190"};
+    private static final String[] AIRLINES = {"AA", "UA", "DL", "WN", "AS", "B6", "NK", "F9"};
+    private static final String[] STATUS = {"SCHEDULED", "DELAYED", "DEPARTED", "ARRIVED", "CANCELLED"};
     private static final String DEFAULT_TOPIC = "flight-status-avro";
-    
+
     private final KafkaProducer<String, Flight> producer;
+    private final String topic;
     private final Faker faker;
     private final Random random;
-    private final String topic;
 
     public AvroFlightDataGenerator(String bootstrapServers, String schemaRegistryUrl) {
         this(bootstrapServers, schemaRegistryUrl, DEFAULT_TOPIC);
@@ -41,80 +44,63 @@ public class AvroFlightDataGenerator {
         props.put("schema.registry.url", schemaRegistryUrl);
 
         this.producer = new KafkaProducer<>(props);
+        this.topic = topic;
         this.faker = new Faker();
         this.random = new Random();
-        this.topic = topic;
     }
 
-    private Flight generateFlight() {
-        String flightId = UUID.randomUUID().toString();
-        String flightNumber = faker.aviation().flight();
-        
-        String depAirport = AIRPORTS[random.nextInt(AIRPORTS.length)];
-        String arrAirport;
-        do {
-            arrAirport = AIRPORTS[random.nextInt(AIRPORTS.length)];
-        } while (arrAirport.equals(depAirport));
-
-        Instant now = Instant.now();
-        Instant departureTime = now.plus(random.nextInt(48), ChronoUnit.HOURS);
-        Instant arrivalTime = departureTime.plus(2 + random.nextInt(8), ChronoUnit.HOURS);
-
-        String aircraftModel = AIRCRAFT_MODELS[random.nextInt(AIRCRAFT_MODELS.length)];
-        String registration = faker.aviation().aircraft();
-
-        Aircraft aircraft = Aircraft.newBuilder()
-                .setModel(aircraftModel)
-                .setRegistration(registration)
-                .build();
-
-        FlightStatus status = random.nextInt(100) < 80 ? 
-                FlightStatus.SCHEDULED : 
-                FlightStatus.values()[random.nextInt(FlightStatus.values().length)];
-
-        Integer delayMinutes = status == FlightStatus.DELAYED ? 
-                random.nextInt(180) + 15 : null;
-
-        return Flight.newBuilder()
-                .setFlightId(flightId)
-                .setFlightNumber(flightNumber)
-                .setDepartureAirport(depAirport)
-                .setArrivalAirport(arrAirport)
-                .setDepartureTime(departureTime.toEpochMilli())
-                .setArrivalTime(arrivalTime.toEpochMilli())
-                .setStatus(status)
-                .setAircraft(aircraft)
-                .setDelayMinutes(delayMinutes)
-                .setUpdateTimestamp(Instant.now().toEpochMilli())
-                .build();
-    }
-
-    public void generateData(int messageCount, long intervalMs) {
+    public void generateData(int count, int delayMs) {
         try {
-            for (int i = 0; i < messageCount; i++) {
+            for (int i = 0; i < count; i++) {
                 Flight flight = generateFlight();
-                ProducerRecord<String, Flight> record = 
-                    new ProducerRecord<>(topic, flight.getFlightId(), flight);
-
+                ProducerRecord<String, Flight> record = new ProducerRecord<>(topic, flight.getFlightNumber(), flight);
                 producer.send(record, (metadata, exception) -> {
                     if (exception != null) {
-                        log.error("Error sending message: ", exception);
+                        logger.error("Error sending message", exception);
                     } else {
-                        log.info("Generated flight data: topic={}, partition={}, offset={}, flight={}",
-                                metadata.topic(), metadata.partition(), metadata.offset(), flight.getFlightNumber());
+                        logger.info("Message sent successfully to topic {} partition {} offset {}",
+                                metadata.topic(), metadata.partition(), metadata.offset());
                     }
                 });
 
-                if (intervalMs > 0) {
-                    TimeUnit.MILLISECONDS.sleep(intervalMs);
+                if (delayMs > 0) {
+                    TimeUnit.MILLISECONDS.sleep(delayMs);
                 }
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            log.error("Data generation interrupted", e);
+            logger.error("Data generation interrupted", e);
         } finally {
             producer.close();
         }
+    }
+
+    private Flight generateFlight() {
+        String airline = AIRLINES[random.nextInt(AIRLINES.length)];
+        String flightNumber = airline + faker.number().numberBetween(1000, 9999);
+        String origin = AIRPORTS[random.nextInt(AIRPORTS.length)];
+        String destination;
+        do {
+            destination = AIRPORTS[random.nextInt(AIRPORTS.length)];
+        } while (destination.equals(origin));
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime scheduledDeparture = now.plusHours(random.nextInt(24));
+        LocalDateTime actualDeparture = random.nextBoolean() ? scheduledDeparture.plusMinutes(random.nextInt(120)) : null;
+        String status = STATUS[random.nextInt(STATUS.length)];
+
+        Flight flight = new Flight();
+        flight.setFlightNumber(flightNumber);
+        flight.setAirline(airline);
+        flight.setOrigin(origin);
+        flight.setDestination(destination);
+        flight.setScheduledDeparture(scheduledDeparture.toInstant(ZoneOffset.UTC).toEpochMilli());
+        if (actualDeparture != null) {
+            flight.setActualDeparture(actualDeparture.toInstant(ZoneOffset.UTC).toEpochMilli());
+        }
+        flight.setStatus(status);
+
+        return flight;
     }
 
     public static void main(String[] args) {
@@ -125,6 +111,6 @@ public class AvroFlightDataGenerator {
         String topic = System.getenv().getOrDefault("TOPIC", DEFAULT_TOPIC);
 
         AvroFlightDataGenerator generator = new AvroFlightDataGenerator(bootstrapServers, schemaRegistryUrl, topic);
-        generator.generateData(messageCount, intervalMs);
+        generator.generateData(messageCount, (int) intervalMs);
     }
 }

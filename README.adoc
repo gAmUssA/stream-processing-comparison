@@ -5,46 +5,57 @@
 :experimental:
 
 This project provides a comparison between Apache Kafka® Streams and Apache Flink stream processing frameworks.
+It demonstrates the differences and similarities between these two popular stream processing solutions.
 
 == Project Structure
 
-The project consists of four main modules:
+The project is organized into four main modules.
+Each module serves a specific purpose in the system:
 
-* `common` -- Shared data models and utilities
-* `kafka-streams-processor` -- Apache Kafka® Streams implementation
-* `flink-processor` -- Apache Flink implementation
-* `data-generator` -- Test data generator
+* `common` -- This module contains shared data models and utilities used across the project.
+* `kafka-streams-processor` -- This module provides the Apache Kafka® Streams implementation.
+* `flink-processor` -- This module contains the Apache Flink implementation.
+* `data-generator` -- This module serves as the test data generator for the system.
 
 == Technology Stack
 
-[cols="1,1"]
+This project is built using modern, enterprise-grade technologies.
+Each component has been carefully selected to ensure reliability and performance.
+The following table lists the core technologies and their versions:
+
+[cols="1,1,2"]
 |===
-|Technology |Version
+|Technology |Version |Description
 
 |Java
 |21
+|The primary programming language used across all modules.
 
 |Apache Kafka®
 |3.9.0 (KRaft mode)
+|The backbone of our stream processing pipeline, running in KRaft mode for better performance.
 
 |Apache Flink
 |1.20.0
+|Provides advanced stream processing capabilities with high throughput and low latency.
 
 |Gradle
 |8.5
+|Our build automation tool, configured with Kotlin DSL for better maintainability.
 |===
 
 == Prerequisites
 
-To run this project, you need:
+The following software components are required to run this project:
 
-* JDK 21 or later
-* Docker and Docker Compose
-* Gradle 8.5 or later
+* JDK 21 or later must be installed on your system.
+* Docker and Docker Compose are needed for containerization.
+* Gradle 8.5 or later is required for building the project.
 
 == Building and Running
 
-The project uses a Makefile for common operations. Here are the available commands:
+The project utilizes a Makefile to simplify common operations.
+The following commands are available for your use:
 
 [source,bash]
 ----
@@ -58,58 +69,90 @@ make clean         # Clean up everything (stops containers and prunes Docker)
 
 === Quick Start
 
-1. Build and start all services:
+Follow these steps to get the system up and running:
+
+1. Build and start all services using the following command:
 +
 [source,bash]
 ----
 make docker-up
 ----
 
-2. The following services will be started:
-* Kafka broker (KRaft mode) at `localhost:29092` (external) and `kafka:9092` (internal)
-* Data generator service that produces flight events to the `flight-status` topic
+2. Upon successful startup, you will have access to the following services:
+* A Kafka broker running in KRaft mode with two access points:
+** Use `localhost:29092` for external connections
+** Use `kafka:9092` for internal connections
+* A data generator service that continuously:
+** Produces flight events
+** Sends them to the `flight-status` topic
 
 == Module Details
 
 === Common Module
-Contains shared data models:
+This module contains shared data models used across the project.
+The following models are included:
 
-* `FlightEvent` - Represents flight events with properties like flight number, airline, airports, departure times, and status
-* `RouteDelayStats` - Maintains statistics about delays for specific routes, used for analyzing flight patterns
+* `FlightEvent` - This is the core data model representing individual flight events.
+Each event contains comprehensive flight information including:
+** Flight number and airline details
+** Origin and destination airports
+** Scheduled and actual departure times
+** Current flight status
+** Real-time delay information
+Each event instance represents a specific point in time during a flight's journey.
+
+* `RouteDelayStats` - This model maintains statistical data about flight routes.
+It aggregates delay information for specific origin-destination pairs.
+The model tracks:
+** Average delay times
+** Frequency of delays
+** Historical delay patterns
+** Risk assessment metrics
+This information is crucial for identifying problematic routes and optimizing flight schedules.
 
 === Data Generator
-Generates simulated flight events and publishes them to Kafka topics. Features include:
+This module generates simulated flight events and publishes them to Kafka topics.
+It provides several features for realistic data simulation:
 
 * Realistic flight data generation using major airports and airlines
 * Random delay simulation
 * Flight status updates
 * Configurable generation rates
 
-Configuration options:
+The data generator can be configured through environment variables.
+Each configuration option serves a specific purpose in controlling the data generation process.
+The following table describes the available configuration options:
 
-[cols="2,1,2"]
+[cols="2,1,2,2"]
 |===
-|Parameter |Environment Variable |Default Value
+|Parameter |Environment Variable |Default Value |Description
 
 |Bootstrap Servers
 |KAFKA_BOOTSTRAP_SERVERS
 |localhost:29092
+|The Kafka cluster connection endpoints for the data generator.
 
 |Kafka Topic
 |KAFKA_TOPIC
 |flight-status
+|The target topic where flight events will be published.
 
 |Generation Interval (ms)
 |GENERATION_INTERVAL_MS
 |1000
+|The time interval between generating new flight events in milliseconds.
 
 |Number of Active Flights
 |NUMBER_OF_FLIGHTS
 |10
+|The number of concurrent flights to simulate in the system.
 |===
 
+These settings can be adjusted to simulate different scenarios and load patterns.
+
 === Kafka Streams Processor
-Implementation of stream processing using Apache Kafka® Streams API. Features:
+This module implements stream processing using Apache Kafka® Streams API.
+It provides several key features for flight data analysis:
 
 * Real-time flight delay monitoring
 * Route-based delay statistics
@@ -117,38 +160,51 @@ Implementation of stream processing using Apache Kafka® Streams API. Features:
 * Exactly-once processing guarantee
 
 === Flink Processor
-Implementation of stream processing using Apache Flink (in progress).
+This module implements stream processing using Apache Flink.
+The implementation is currently in progress.
+It will provide parallel functionality to the Kafka Streams implementation.
+This will enable direct comparison between the two stream processing frameworks.
 
 == Docker Setup
 
-The project uses Docker Compose with the following services:
+The project utilizes Docker Compose to orchestrate the following services:
 
 === Kafka
-* Uses Apache Kafka® 3.9.0 in KRaft mode (no ZooKeeper)
-* Exposes ports 9092 (internal) and 29092 (external)
-* Configured with transaction support and minimal replication for development
+* The service runs Apache Kafka® 3.9.0 in KRaft mode.
+* No ZooKeeper is required for operation.
+* It exposes port 9092 for internal communication.
+* External applications can connect through port 29092.
+* The service is configured with transaction support.
+* Minimal replication is set up for development purposes.
 
 === Data Generator
-* Built from Eclipse Temurin JRE 21 base image
-* Automatically starts when Kafka is healthy
-* Configurable through environment variables
-* Produces flight events to the configured Kafka topic
+* The service is built from Eclipse Temurin JRE 21 base image.
+* It starts automatically when Kafka becomes healthy.
+* All settings can be configured through environment variables.
+* The service continuously produces flight events to the configured Kafka topic.
 
 == Development
 
 === Running Tests
+Use the following command to execute all tests in the project:
+
 [source,bash]
 ----
 ./gradlew test
 ----
 
-=== Code Style
-The project uses:
+This command will run the complete test suite and provide detailed test results.
 
-* Gradle with Kotlin DSL for build scripts
-* AsciiDoc for documentation
-* GitHub CLI for repository management
+=== Code Style
+The project follows specific conventions and uses several tools for development:
+
+* Gradle with Kotlin DSL is used for build scripts.
+* AsciiDoc is used for all documentation.
+* GitHub CLI is utilized for repository management.
 
 == License
 
-This project is licensed under the MIT License - see the link:LICENSE[LICENSE] file for details.
+This project is released under the MIT License.
+The full license text is available in the link:LICENSE[LICENSE] file.
+This permissive license allows for free use, modification, and distribution of the software.
+Please review the license terms before using this project in your own work.

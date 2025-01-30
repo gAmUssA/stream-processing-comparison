@@ -101,17 +101,20 @@ class AvroFlightDataGeneratorTest {
 
     // Validate flight data
     for (Flight flight : receivedFlights) {
-      assertNotNull(flight.getFlightId(), "Flight ID should not be null");
       assertNotNull(flight.getFlightNumber(), "Flight number should not be null");
-      assertNotNull(flight.getDepartureAirport(), "Departure airport should not be null");
-      assertNotNull(flight.getArrivalAirport(), "Arrival airport should not be null");
-      assertNotEquals(flight.getDepartureAirport(), flight.getArrivalAirport(),
-                      "Departure and arrival airports should be different");
-      assertTrue(flight.getDepartureTime() < flight.getArrivalTime(),
-                 "Departure time should be before arrival time");
-      assertNotNull(flight.getAircraft(), "Aircraft details should not be null");
-      assertNotNull(flight.getAircraft().getModel(), "Aircraft model should not be null");
-      assertNotNull(flight.getAircraft().getRegistration(), "Aircraft registration should not be null");
+      assertNotNull(flight.getAirline(), "Airline should not be null");
+      assertNotNull(flight.getOrigin(), "Origin should not be null");
+      assertNotNull(flight.getDestination(), "Destination should not be null");
+      assertNotEquals(flight.getOrigin(), flight.getDestination(),
+                      "Origin and destination should be different");
+      assertNotNull(flight.getScheduledDeparture(), "Scheduled departure should not be null");
+      assertNotNull(flight.getStatus(), "Status should not be null");
+      
+      // Actual departure is optional
+      if (flight.getActualDeparture() != null) {
+        assertTrue(flight.getActualDeparture() >= flight.getScheduledDeparture(),
+                   "Actual departure should not be before scheduled departure");
+      }
     }
   }
 
