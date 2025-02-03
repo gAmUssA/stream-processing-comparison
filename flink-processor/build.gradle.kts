@@ -1,6 +1,6 @@
 plugins {
     application
-    id("com.gradleup.shadow") version "8.3.5"
+    id("com.gradleup.shadow") version "8.3.6"
 }
 
 val flinkVersion = "1.20.0"
