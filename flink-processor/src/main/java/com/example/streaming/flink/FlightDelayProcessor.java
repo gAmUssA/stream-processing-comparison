@@ -35,10 +35,11 @@ public class FlightDelayProcessor {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         
-        // Enable checkpointing for fault tolerance
+        //region Enable checkpointing for fault tolerance
         env.enableCheckpointing(60000); // Checkpoint every minute
+        //endregion
         
-        // Configure Kafka source
+        //region Configure Kafka source
         KafkaSource<FlightEvent> source = KafkaSource.<FlightEvent>builder()
                 .setBootstrapServers("localhost:29092")
                 .setTopics("flight-status")
@@ -46,43 +47,50 @@ public class FlightDelayProcessor {
                 .setStartingOffsets(OffsetsInitializer.earliest())
                 .setDeserializer(new FlightEventDeserializationSchema())
                 .build();
+        //endregion
 
-        // Configure watermark strategy with event time
+        //region Configure watermark strategy with event time
         WatermarkStrategy<FlightEvent> watermarkStrategy = WatermarkStrategy
                 .<FlightEvent>forBoundedOutOfOrderness(Duration.ofMinutes(1))
                 .withTimestampAssigner((event, timestamp) -> event.getEventTimestamp());
+        //endregion
 
-        // Create main data stream
+        //region Create main data stream
         DataStream<FlightEvent> flightEvents = env
                 .fromSource(source, watermarkStrategy, "Flight Events")
                 .name("flight-events-source");
+        //endregion
 
-        // Process flight delays
+        //region Process flight delays
         DataStream<RouteDelayStats> routeStats = flightEvents
                 .keyBy(FlightEvent::getRouteKey)
                 .window(TumblingEventTimeWindows.of(Time.minutes(15)))
                 .process(new FlightDelayWindowProcessor())
                 .name("route-delay-processor");
-
-        // Split stream for different outputs
+        //endregion
+        
+        //region Split stream for different outputs
         DataStream<RouteDelayStats> alerts = routeStats
                 .filter(RouteDelayStats::isHighRiskRoute)
                 .name("high-risk-routes");
+        //endregion
 
-        // Configure Kafka sinks
+        //region Configure Kafka sinks
         KafkaSink<RouteDelayStats> statsSink = KafkaSink.<RouteDelayStats>builder()
                 .setBootstrapServers("localhost:29092")
                 .setRecordSerializer(new RouteDelayStatsSerializer("route-stats"))
                 .build();
-
+        
         KafkaSink<RouteDelayStats> alertsSink = KafkaSink.<RouteDelayStats>builder()
                 .setBootstrapServers("localhost:29092")
                 .setRecordSerializer(new RouteDelayStatsSerializer("delay-alerts"))
                 .build();
+        //endregion
 
-        // Write to Kafka
+        //region Write to Kafka
         routeStats.sinkTo(statsSink).name("route-stats-sink");
         alerts.sinkTo(alertsSink).name("alerts-sink");
+        //endregion
 
         env.execute("Flight Delay Processor");
     }

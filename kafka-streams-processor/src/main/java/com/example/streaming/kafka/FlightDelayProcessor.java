@@ -77,7 +77,7 @@ public class FlightDelayProcessor {
         Duration.ofMinutes(1)
     ).advanceBy(Duration.ofMinutes(1));
 
-    // Convert input JSON to FlightEvent
+    //region Convert input JSON to FlightEvent
     KStream<String, FlightEvent> flightStream = inputStream
         .mapValues((key, value) -> {
           if (value == null) {
@@ -95,8 +95,9 @@ public class FlightDelayProcessor {
         .filter((key, value) -> value != null && value.isValid())
         .peek((key, value) -> MDC.put("route", value.getRouteKey()))
         .selectKey((key, value) -> value.getRouteKey());
+    //endregion
 
-    // Aggregate flight delays into stats
+    //region Aggregate flight delays into stats
     KTable<Windowed<String>, RouteDelayStats> statsTable = flightStream
         .groupByKey(Grouped.with(Serdes.String(), CustomSerdes.flightEvent()))
         .windowedBy(timeWindow)
@@ -118,8 +119,9 @@ public class FlightDelayProcessor {
                 .withRetention(Duration.ofHours(24))
                 .withCachingEnabled()
         );
+    //endregion
 
-    // Convert windowed KTable to KStream
+    //region Convert windowed KTable to KStream
     KStream<String, RouteDelayStats> statsStream = statsTable
         .toStream()
         .selectKey((windowed, value) -> windowed.key());
@@ -129,8 +131,9 @@ public class FlightDelayProcessor {
         (key, stats) -> stats != null && stats.isHighRiskRoute() && stats.getCurrentWindowSize() >= 5,
         (key, stats) -> true
     );
+    //endregion
 
-    // Convert stats to JSON for output
+    //region Convert stats to JSON for output
     KStream<String, String> statsJsonStream = branches[1]
         .mapValues((key, stats) -> {
           try {
@@ -142,8 +145,9 @@ public class FlightDelayProcessor {
           }
         })
         .filter((key, value) -> value != null);
+    //endregion
 
-    // Generate alerts for high-risk routes
+    //region Generate alerts for high-risk routes
     KStream<String, String> alertsStream = branches[0]
         .peek((key, stats) -> MDC.put("route", stats.getRouteKey()))
         .mapValues(stats -> {
@@ -160,7 +164,8 @@ public class FlightDelayProcessor {
             MDC.remove("route");
           }
         });
-
+    //endregion
+    
     // Output to topics
     statsJsonStream.to(delaysTopic);
     alertsStream.to(alertsTopic);
