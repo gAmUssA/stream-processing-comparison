@@ -11,7 +11,7 @@ dependencies {
     val logbackVersion = "1.5.16"
     val testcontainersVersion = "1.20.4"
     val avroVersion = "1.12.0"
-    val confluentVersion = "7.8.0"
+    val confluentVersion = "7.8.1"
 
     implementation(project(":common"))
 
