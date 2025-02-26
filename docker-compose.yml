@@ -63,3 +63,20 @@ services:
       - MESSAGE_COUNT=1000
       - INTERVAL_MS=1000
       - KAFKA_TOPIC=flight-status-avro
+
+  flink-data-generator:
+    image: gamussa/flink-data-generator:latest
+    build:
+      context: ./flink-data-generator
+      dockerfile: Dockerfile
+    depends_on:
+      kafka:
+        condition: service_healthy
+      schema-registry:
+        condition: service_healthy
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - SCHEMA_REGISTRY_URL=http://schema-registry:8081
+      - KAFKA_TOPIC=flight-status-flink-avro
+      - GENERATOR_RATE=10
+      - GENERATOR_COUNT=1000

@@ -4,5 +4,6 @@ include(
     "common",
     "kafka-streams-processor",
     "flink-processor",
-    "data-generator"
+    "data-generator",
+    "flink-data-generator"
 )

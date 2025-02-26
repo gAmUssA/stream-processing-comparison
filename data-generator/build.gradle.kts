@@ -1,7 +1,6 @@
 plugins {
     application
     java
-    id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
 }
 
 dependencies {
@@ -10,8 +9,6 @@ dependencies {
     val slf4jVersion = "2.0.16"
     val logbackVersion = "1.5.16"
     val testcontainersVersion = "1.20.4"
-    val avroVersion = "1.12.0"
-    val confluentVersion = "7.8.0"
 
     implementation(project(":common"))
 
@@ -20,11 +17,6 @@ dependencies {
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.2")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
-
-    // Avro and Schema Registry dependencies
-    implementation("org.apache.avro:avro:$avroVersion")
-    implementation("io.confluent:kafka-avro-serializer:$confluentVersion")
-    implementation("io.confluent:kafka-schema-registry-client:$confluentVersion")
 
     compileOnly("org.projectlombok:lombok:$lombokVersion")
     annotationProcessor("org.projectlombok:lombok:$lombokVersion")
@@ -45,22 +37,6 @@ repositories {
     }
     maven {
         url = uri("https://packages.confluent.io/maven/")
-    }
-}
-
-avro {
-    setCreateSetters(true)
-    setCreateOptionalGetters(false)
-    setGettersReturnOptional(false)
-    setOptionalGettersForNullableFieldsOnly(false)
-    setFieldVisibility("PRIVATE")
-}
-
-sourceSets {
-    main {
-        java {
-            srcDir("build/generated-main-avro-java")
-        }
     }
 }
 

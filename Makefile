@@ -6,14 +6,14 @@ BLUE := $(shell tput setaf 4)
 BOLD := $(shell tput bold)
 RESET := $(shell tput sgr0)
 
-.PHONY: help docker-up docker-down build clean kafka-ready data-generator-build data-generator-push data-generator-clean
+.PHONY: help docker-up docker-down build clean kafka-ready data-generator-build data-generator-push data-generator-clean flink-data-generator-build flink-data-generator-push flink-data-generator-clean
 
 help: ## Show this help message
 	@echo '${YELLOW}Usage:${RESET}'
 	@echo '  make ${GREEN}<target>${RESET}'
 	@echo ''
 	@echo '${YELLOW}Targets:${RESET}'
-	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  ${GREEN}%-15s${RESET} %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  ${GREEN}%-25s${RESET} %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 build: ## Build all applications
 	@echo "${BLUE}🔨 Building applications...${RESET}"
@@ -34,6 +34,21 @@ data-generator-clean: ## Clean data-generator images
 	@echo "${BLUE}🧹 Cleaning data-generator...${RESET}"
 	@$(MAKE) -C data-generator clean
 	@echo "${GREEN}✅ Data generator cleanup complete!${RESET}"
+
+flink-data-generator-build: ## Build flink-data-generator Docker image
+	@echo "${BLUE}🏗️  Building flink-data-generator...${RESET}"
+	@$(MAKE) -C flink-data-generator build-image
+	@echo "${GREEN}✅ Flink data generator build complete!${RESET}"
+
+flink-data-generator-push: ## Push flink-data-generator image to registry
+	@echo "${BLUE}⬆️  Pushing flink-data-generator image...${RESET}"
+	@$(MAKE) -C flink-data-generator push-image
+	@echo "${GREEN}✅ Flink data generator push complete!${RESET}"
+
+flink-data-generator-clean: ## Clean flink-data-generator images
+	@echo "${BLUE}🧹 Cleaning flink-data-generator...${RESET}"
+	@$(MAKE) -C flink-data-generator clean
+	@echo "${GREEN}✅ Flink data generator cleanup complete!${RESET}"
 
 docker-up: ##build ## Start all containers
 	@echo "${BLUE}🐳 Starting Docker containers...${RESET}"

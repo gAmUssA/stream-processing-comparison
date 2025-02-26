@@ -1,0 +1,21 @@
+= Shownotes and timeline
+Viktor Gamov <vgamov@confluent.io>
+v1.0, 2025-02-04
+:toc:
+
+== timeline
+
+[source]
+.timeline for 50 min talk
+----
+00:00 Intro and welcome
+05:00 What is Stream Processing?
+10:00 What is Kafka - producers, consumers
+18:00 Application / System Architecture
+25:00 State Management
+30:00 Task Assignment and Scale
+35:00 Window Operations
+40:00 Exactly-Once Semantics
+45:00 Final Thoughts + Current
+50:00 FINISH
+----
