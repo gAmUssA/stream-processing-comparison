@@ -6,9 +6,9 @@ plugins {
 dependencies {
     val kafkaVersion: String by rootProject.extra
     val lombokVersion: String by rootProject.extra
-    val slf4jVersion = "2.0.16"
-    val logbackVersion = "1.5.16"
-    val testcontainersVersion = "1.20.4"
+    val slf4jVersion = "2.0.17"
+    val logbackVersion = "1.5.17"
+    val testcontainersVersion = "1.20.5"
 
     implementation(project(":common"))
 
@@ -24,7 +24,7 @@ dependencies {
     testCompileOnly("org.projectlombok:lombok:$lombokVersion")
     testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")
 
-    testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.12.0")
     testImplementation("org.testcontainers:junit-jupiter:$testcontainersVersion")
     testImplementation("org.testcontainers:kafka:$testcontainersVersion")
     testImplementation("com.github.testcontainers-all-things-kafka:cp-testcontainers:0.2.1")

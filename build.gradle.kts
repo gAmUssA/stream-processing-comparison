@@ -75,8 +75,8 @@ extra.apply {
     extra["flinkVersion"] = "1.20.0"  // Use a stable version that is available
     extra["lombokVersion"] = "1.18.36"
     extra["jacksonVersion"] = "2.18.2"
-    extra["slf4jVersion"] = "2.0.16"
-    set("logbackVersion", "1.5.16")
+    extra["slf4jVersion"] = "2.0.17"
+    set("logbackVersion", "1.5.17")
     set("junitVersion", "5.12.0")
     set("mockitoVersion", "5.15.2")
     set("testcontainersVersion", "1.19.3")
