@@ -74,7 +74,7 @@ extra.apply {
     extra["kafkaVersion"] = "3.9.0"
     extra["flinkVersion"] = "1.20.0"  // Use a stable version that is available
     extra["lombokVersion"] = "1.18.36"
-    extra["jacksonVersion"] = "2.18.2"
+    extra["jacksonVersion"] = "2.18.3"
     extra["slf4jVersion"] = "2.0.17"
     set("logbackVersion", "1.5.17")
     set("junitVersion", "5.12.0")
