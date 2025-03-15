@@ -25,8 +25,8 @@ dependencies {
     // Test dependencies
     testImplementation("org.junit.jupiter:junit-jupiter:5.12.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    testImplementation("org.mockito:mockito-core:5.16.0")
-    testImplementation("org.mockito:mockito-junit-jupiter:5.16.0")
+    testImplementation("org.mockito:mockito-core:5.16.1")
+    testImplementation("org.mockito:mockito-junit-jupiter:5.16.1")
     
     testCompileOnly("org.projectlombok:lombok:${lombokVersion}")
     testAnnotationProcessor("org.projectlombok:lombok:${lombokVersion}")
