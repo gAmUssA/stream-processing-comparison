@@ -8,7 +8,7 @@ val kafkaVersion: String by rootProject.extra
 val lombokVersion: String by rootProject.extra
 val slf4jVersion: String by rootProject.extra
 val logbackVersion: String by rootProject.extra
-val junitVersion = "5.12.0"
+val junitVersion = "5.12.1"
 
 // Configure the application plugin
 application {
