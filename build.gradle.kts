@@ -76,7 +76,7 @@ extra.apply {
     extra["lombokVersion"] = "1.18.36"
     extra["jacksonVersion"] = "2.18.3"
     extra["slf4jVersion"] = "2.0.17"
-    set("logbackVersion", "1.5.17")
+    set("logbackVersion", "1.5.18")
     set("junitVersion", "5.12.1")
     set("mockitoVersion", "5.16.1")
     set("testcontainersVersion", "1.19.3")
