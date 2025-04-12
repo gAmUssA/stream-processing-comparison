@@ -13,7 +13,7 @@ dependencies {
     implementation(project(":common"))
 
     implementation("org.apache.kafka:kafka-clients:$kafkaVersion")
-    implementation("net.datafaker:datafaker:2.4.2")
+    implementation("net.datafaker:datafaker:2.4.3")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.3")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
@@ -24,7 +24,7 @@ dependencies {
     testCompileOnly("org.projectlombok:lombok:$lombokVersion")
     testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")
 
-    testImplementation("org.junit.jupiter:junit-jupiter:5.12.1")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.12.2")
     testImplementation("org.testcontainers:junit-jupiter:$testcontainersVersion")
     testImplementation("org.testcontainers:kafka:$testcontainersVersion")
     testImplementation("com.github.testcontainers-all-things-kafka:cp-testcontainers:0.2.1")
