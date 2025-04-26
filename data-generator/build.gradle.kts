@@ -8,13 +8,13 @@ dependencies {
     val lombokVersion: String by rootProject.extra
     val slf4jVersion = "2.0.17"
     val logbackVersion = "1.5.18"
-    val testcontainersVersion = "1.20.6"
+    val testcontainersVersion = "1.21.0"
 
     implementation(project(":common"))
 
     implementation("org.apache.kafka:kafka-clients:$kafkaVersion")
     implementation("net.datafaker:datafaker:2.4.3")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.3")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.19.0")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
 
