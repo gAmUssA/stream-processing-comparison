@@ -54,7 +54,7 @@ dependencies {
     testImplementation("org.apache.flink:flink-runtime:${flinkVersion}")
     testImplementation("org.apache.flink:flink-streaming-java:${flinkVersion}:tests")
     testImplementation("org.assertj:assertj-core:3.27.3")
-    testImplementation("org.mockito:mockito-core:5.17.0")
+    testImplementation("org.mockito:mockito-core:5.18.0")
 
     // Mark Flink dependencies as 'provided' for the shadow JAR
     flinkShadowJar("org.apache.flink:flink-streaming-java:${flinkVersion}")
