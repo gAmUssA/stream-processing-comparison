@@ -6,7 +6,7 @@ plugins {
 val jacksonVersion: String by rootProject.extra
 val lombokVersion: String by rootProject.extra
 val avroVersion = "1.12.0"
-val confluentVersion = "7.9.1"
+val confluentVersion = "7.9.2"
 
 dependencies {
     // Jackson for JSON serialization
@@ -23,7 +23,7 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:${lombokVersion}")
     
     // Test dependencies
-    testImplementation("org.junit.jupiter:junit-jupiter:5.13.0")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.13.4")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("org.mockito:mockito-core:5.18.0")
     testImplementation("org.mockito:mockito-junit-jupiter:5.18.0")

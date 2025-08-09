@@ -36,7 +36,7 @@ subprojects {
 
     dependencies {
         // If using JUnit Jupiter
-        testImplementation("org.junit.jupiter:junit-jupiter:5.13.0")
+        testImplementation("org.junit.jupiter:junit-jupiter:5.13.4")
         testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     }
 
@@ -74,10 +74,10 @@ extra.apply {
     extra["kafkaVersion"] = "3.9.0"
     extra["flinkVersion"] = "1.20.0"  // Use a stable version that is available
     extra["lombokVersion"] = "1.18.38"
-    extra["jacksonVersion"] = "2.19.0"
+    extra["jacksonVersion"] = "2.19.2"
     extra["slf4jVersion"] = "2.0.17"
     set("logbackVersion", "1.5.18")
-    set("junitVersion", "5.13.0")
+    set("junitVersion", "5.13.4")
     set("mockitoVersion", "5.18.0")
     set("testcontainersVersion", "1.19.3")
 }

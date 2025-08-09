@@ -1,6 +1,6 @@
 plugins {
     application
-    id("com.gradleup.shadow") version "8.3.6"
+    id("com.gradleup.shadow") version "8.3.9"
 }
 
 val flinkVersion = "1.20.0"
@@ -8,7 +8,7 @@ val kafkaVersion = "3.8.0"
 val lombokVersion: String by rootProject.extra
 val slf4jVersion: String by rootProject.extra
 val logbackVersion: String by rootProject.extra
-val junitVersion = "5.13.0"
+val junitVersion = "5.13.4"
 
 // Configure the application plugin
 application {
@@ -53,7 +53,7 @@ dependencies {
     testImplementation("org.apache.flink:flink-test-utils:${flinkVersion}")
     testImplementation("org.apache.flink:flink-runtime:${flinkVersion}")
     testImplementation("org.apache.flink:flink-streaming-java:${flinkVersion}:tests")
-    testImplementation("org.assertj:assertj-core:3.27.3")
+    testImplementation("org.assertj:assertj-core:3.27.4")
     testImplementation("org.mockito:mockito-core:5.18.0")
 
     // Mark Flink dependencies as 'provided' for the shadow JAR
