@@ -78,6 +78,6 @@ extra.apply {
     extra["slf4jVersion"] = "2.0.17"
     set("logbackVersion", "1.5.18")
     set("junitVersion", "5.13.4")
-    set("mockitoVersion", "5.18.0")
+    set("mockitoVersion", "5.19.0")
     set("testcontainersVersion", "1.19.3")
 }
