@@ -3,7 +3,7 @@ plugins {
     id("com.gradleup.shadow") version "8.3.9"
 }
 
-val flinkVersion = "1.20.0"
+val flinkVersion = "1.20.1"
 val kafkaVersion = "3.8.0"
 val lombokVersion: String by rootProject.extra
 val slf4jVersion: String by rootProject.extra
