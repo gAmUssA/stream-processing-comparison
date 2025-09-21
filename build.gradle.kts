@@ -2,7 +2,7 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
     id("java")
-    id("org.asciidoctor.jvm.convert") version "4.0.4" apply false
+    id("org.asciidoctor.jvm.convert") version "4.0.5" apply false
 }
 
 allprojects {
@@ -73,11 +73,11 @@ gradle.startParameter.maxWorkerCount = Runtime.getRuntime().availableProcessors(
 extra.apply {
     extra["kafkaVersion"] = "3.9.0"
     extra["flinkVersion"] = "1.20.0"  // Use a stable version that is available
-    extra["lombokVersion"] = "1.18.38"
-    extra["jacksonVersion"] = "2.19.2"
+    extra["lombokVersion"] = "1.18.42"
+    extra["jacksonVersion"] = "2.20.0"
     extra["slf4jVersion"] = "2.0.17"
     set("logbackVersion", "1.5.18")
     set("junitVersion", "5.13.4")
-    set("mockitoVersion", "5.19.0")
+    set("mockitoVersion", "5.20.0")
     set("testcontainersVersion", "1.19.3")
 }
