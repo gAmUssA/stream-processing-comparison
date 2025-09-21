@@ -54,7 +54,7 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:${lombokVersion}")
 
     // Data generation
-    implementation("net.datafaker:datafaker:2.4.4")
+    implementation("net.datafaker:datafaker:2.5.0")
 
     // Testing dependencies
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
@@ -62,8 +62,8 @@ dependencies {
     testImplementation("org.apache.flink:flink-test-utils:${flinkVersion}")
     testImplementation("org.apache.flink:flink-runtime:${flinkVersion}")
     testImplementation("org.apache.flink:flink-streaming-java:${flinkVersion}:tests")
-    testImplementation("org.assertj:assertj-core:3.27.4")
-    testImplementation("org.mockito:mockito-core:5.19.0")
+    testImplementation("org.assertj:assertj-core:3.27.5")
+    testImplementation("org.mockito:mockito-core:5.20.0")
 
     // Mark Flink dependencies as 'provided' for the shadow JAR
     flinkShadowJar("org.apache.flink:flink-streaming-java:${flinkVersion}")
