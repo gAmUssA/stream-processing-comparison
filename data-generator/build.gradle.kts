@@ -13,7 +13,7 @@ dependencies {
     implementation(project(":common"))
 
     implementation("org.apache.kafka:kafka-clients:$kafkaVersion")
-    implementation("net.datafaker:datafaker:2.5.0")
+    implementation("net.datafaker:datafaker:2.5.1")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.20.0")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
