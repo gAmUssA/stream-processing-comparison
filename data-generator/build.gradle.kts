@@ -24,7 +24,7 @@ dependencies {
     testCompileOnly("org.projectlombok:lombok:$lombokVersion")
     testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")
 
-    testImplementation("org.junit.jupiter:junit-jupiter:5.14.0")
+    testImplementation("org.junit.jupiter:junit-jupiter:6.0.0")
     testImplementation("org.testcontainers:junit-jupiter:$testcontainersVersion")
     testImplementation("org.testcontainers:kafka:$testcontainersVersion")
     testImplementation("com.github.testcontainers-all-things-kafka:cp-testcontainers:0.2.1")
