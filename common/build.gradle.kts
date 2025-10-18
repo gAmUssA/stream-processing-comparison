@@ -5,7 +5,7 @@ plugins {
 
 val jacksonVersion: String by rootProject.extra
 val lombokVersion: String by rootProject.extra
-val avroVersion = "1.12.0"
+val avroVersion = "1.12.1"
 val confluentVersion = "7.9.4"
 
 dependencies {
