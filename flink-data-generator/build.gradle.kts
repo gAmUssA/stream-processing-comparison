@@ -54,7 +54,7 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:${lombokVersion}")
 
     // Data generation
-    implementation("net.datafaker:datafaker:2.5.2")
+    implementation("net.datafaker:datafaker:2.5.3")
 
     // Testing dependencies
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
