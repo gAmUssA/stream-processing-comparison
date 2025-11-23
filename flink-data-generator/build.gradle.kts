@@ -8,7 +8,7 @@ val kafkaVersion: String by rootProject.extra
 val lombokVersion: String by rootProject.extra
 val slf4jVersion: String by rootProject.extra
 val logbackVersion: String by rootProject.extra
-val junitVersion = "6.0.0"
+val junitVersion = "6.0.1"
 
 // Configure the application plugin
 application {
@@ -54,7 +54,7 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:${lombokVersion}")
 
     // Data generation
-    implementation("net.datafaker:datafaker:2.5.2")
+    implementation("net.datafaker:datafaker:2.5.3")
 
     // Testing dependencies
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
