@@ -7,14 +7,14 @@ dependencies {
     val kafkaVersion: String by rootProject.extra
     val lombokVersion: String by rootProject.extra
     val slf4jVersion = "2.0.17"
-    val logbackVersion = "1.5.20"
+    val logbackVersion = "1.5.21"
     val testcontainersVersion = "1.21.3"
 
     implementation(project(":common"))
 
     implementation("org.apache.kafka:kafka-clients:$kafkaVersion")
-    implementation("net.datafaker:datafaker:2.5.2")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.20.0")
+    implementation("net.datafaker:datafaker:2.5.3")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.20.1")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
 
@@ -24,7 +24,7 @@ dependencies {
     testCompileOnly("org.projectlombok:lombok:$lombokVersion")
     testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")
 
-    testImplementation("org.junit.jupiter:junit-jupiter:6.0.0")
+    testImplementation("org.junit.jupiter:junit-jupiter:6.0.1")
     testImplementation("org.testcontainers:junit-jupiter:$testcontainersVersion")
     testImplementation("org.testcontainers:kafka:$testcontainersVersion")
     testImplementation("com.github.testcontainers-all-things-kafka:cp-testcontainers:0.2.1")
