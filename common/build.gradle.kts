@@ -6,7 +6,7 @@ plugins {
 val jacksonVersion: String by rootProject.extra
 val lombokVersion: String by rootProject.extra
 val avroVersion = "1.12.1"
-val confluentVersion = "7.9.5"
+val confluentVersion = "8.1.0"
 
 dependencies {
     // Jackson for JSON serialization
