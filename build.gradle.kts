@@ -71,7 +71,7 @@ gradle.startParameter.maxWorkerCount = Runtime.getRuntime().availableProcessors(
 
 // Common versions for all modules
 extra.apply {
-    extra["kafkaVersion"] = "3.9.0"
+    extra["kafkaVersion"] = "3.9.1"
     extra["flinkVersion"] = "1.20.0"  // Use a stable version that is available
     extra["lombokVersion"] = "1.18.42"
     extra["jacksonVersion"] = "2.20.1"
