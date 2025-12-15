@@ -7,7 +7,7 @@ dependencies {
     val kafkaVersion: String by rootProject.extra
     val lombokVersion: String by rootProject.extra
     val slf4jVersion = "2.0.17"
-    val logbackVersion = "1.5.21"
+    val logbackVersion = "1.5.22"
     val testcontainersVersion = "1.21.3"
 
     implementation(project(":common"))
