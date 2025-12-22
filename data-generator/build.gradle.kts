@@ -8,7 +8,7 @@ dependencies {
     val lombokVersion: String by rootProject.extra
     val slf4jVersion = "2.0.17"
     val logbackVersion = "1.5.21"
-    val testcontainersVersion = "1.21.3"
+    val testcontainersVersion = "1.21.4"
 
     implementation(project(":common"))
 
