@@ -36,7 +36,7 @@ subprojects {
 
     dependencies {
         // If using JUnit Jupiter
-        testImplementation("org.junit.jupiter:junit-jupiter:6.0.1")
+        testImplementation("org.junit.jupiter:junit-jupiter:6.0.2")
         testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     }
 
@@ -76,8 +76,8 @@ extra.apply {
     extra["lombokVersion"] = "1.18.42"
     extra["jacksonVersion"] = "2.20.1"
     extra["slf4jVersion"] = "2.0.17"
-    set("logbackVersion", "1.5.23")
-    set("junitVersion", "6.0.1")
+    set("logbackVersion", "1.5.24")
+    set("junitVersion", "6.0.2")
     set("mockitoVersion", "5.21.0")
     set("testcontainersVersion", "1.19.3")
 }
