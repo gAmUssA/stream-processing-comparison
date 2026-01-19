@@ -14,7 +14,7 @@ dependencies {
 
     implementation("org.apache.kafka:kafka-clients:$kafkaVersion")
     implementation("net.datafaker:datafaker:2.5.3")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.20.1")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.21.0")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
 
